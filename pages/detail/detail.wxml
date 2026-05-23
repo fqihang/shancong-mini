@@ -1,0 +1,106 @@
+<view wx:if="{{room}}" class="detail-page">
+  <swiper class="gallery" circular indicator-dots autoplay interval="4200">
+    <swiper-item wx:for="{{room.images}}" wx:key="*this">
+      <image class="gallery-image" src="{{item}}" mode="aspectFill" data-src="{{item}}" bindtap="previewImage" />
+    </swiper-item>
+  </swiper>
+
+  <view class="content">
+    <view class="title-row">
+      <view>
+        <view class="location">{{room.city}} · {{room.area}}</view>
+        <view class="room-name">{{room.name}}</view>
+      </view>
+      <view class="rating">★ {{room.rating}}</view>
+    </view>
+    <view class="tagline">{{room.tagline}}</view>
+
+    <view class="fact-grid">
+      <view class="fact">
+        <text class="fact-value">{{room.capacity}}</text>
+        <text class="fact-label">最多人数</text>
+      </view>
+      <view class="fact">
+        <text class="fact-value">{{room.rooms}}</text>
+        <text class="fact-label">户型</text>
+      </view>
+      <view class="fact">
+        <text class="fact-value">{{room.reviews}}</text>
+        <text class="fact-label">评价数</text>
+      </view>
+    </view>
+
+    <view class="section card booking-card">
+      <view class="section-title">选择行程</view>
+      <view class="booking-grid">
+        <view class="booking-field">
+          <text>入住</text>
+          <picker mode="date" value="{{checkIn}}" bindchange="onCheckInChange">
+            <view>{{checkIn}}</view>
+          </picker>
+        </view>
+        <view class="booking-field">
+          <text>离店</text>
+          <picker mode="date" value="{{checkOut}}" bindchange="onCheckOutChange">
+            <view>{{checkOut}}</view>
+          </picker>
+        </view>
+        <view class="booking-field guest-field">
+          <text>人数</text>
+          <view class="guest-stepper">
+            <button class="stepper-button" bindtap="decreaseGuests">-</button>
+            <text>{{guests}}</text>
+            <button class="stepper-button" bindtap="increaseGuests">+</button>
+          </view>
+        </view>
+      </view>
+      <view class="quote-row">
+        <text>房费 ¥{{room.price}} × {{nights}} 晚</text>
+        <text>¥{{roomTotal}}</text>
+      </view>
+      <view class="quote-row">
+        <text>服务费</text>
+        <text>¥{{serviceFee}}</text>
+      </view>
+      <view class="quote-total">
+        <text>合计</text>
+        <text>¥{{payable}}</text>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">房源亮点</view>
+      <view class="highlight-list">
+        <view wx:for="{{room.highlights}}" wx:key="*this" class="highlight-item">{{item}}</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">设施服务</view>
+      <view class="amenity-grid">
+        <view wx:for="{{room.amenities}}" wx:key="*this" class="amenity">{{item}}</view>
+      </view>
+    </view>
+
+    <view class="section card host-card">
+      <view>
+        <view class="host-name">房东 {{room.host.name}}</view>
+        <view class="host-response">{{room.host.response}}</view>
+      </view>
+      <button class="secondary-button host-button" bindtap="callHost">电话咨询</button>
+    </view>
+
+    <view class="section">
+      <view class="section-title">入住须知</view>
+      <view wx:for="{{room.policies}}" wx:key="*this" class="policy-item">{{item}}</view>
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <view>
+      <text class="bottom-price">¥{{room.price}}</text>
+      <text class="bottom-unit">/晚起</text>
+    </view>
+    <button class="primary-button book-button" bindtap="goBooking">立即预订</button>
+  </view>
+</view>

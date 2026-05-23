@@ -1,0 +1,236 @@
+.home-page {
+  padding-top: 0;
+}
+
+.hero {
+  position: relative;
+  height: 520rpx;
+  margin: 0 -24rpx;
+  overflow: hidden;
+}
+
+.hero-image,
+.hero-mask {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-mask {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(21, 31, 25, 0.74));
+}
+
+.hero-content {
+  position: absolute;
+  left: 32rpx;
+  right: 32rpx;
+  bottom: 42rpx;
+  color: #ffffff;
+}
+
+.hero-kicker {
+  font-size: 24rpx;
+  font-weight: 700;
+  opacity: 0.88;
+}
+
+.hero-title {
+  margin-top: 14rpx;
+  max-width: 620rpx;
+  font-size: 56rpx;
+  line-height: 66rpx;
+  font-weight: 800;
+}
+
+.hero-text {
+  margin-top: 14rpx;
+  max-width: 560rpx;
+  font-size: 27rpx;
+  line-height: 38rpx;
+  opacity: 0.9;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.quick-action {
+  min-height: 72rpx;
+  border-radius: 8rpx;
+  background: #26352c;
+  color: #fff;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.search-card {
+  margin-top: 20rpx;
+  padding: 22rpx;
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  min-height: 72rpx;
+  padding: 0 20rpx;
+  border-radius: 8rpx;
+  background: #f1eadc;
+}
+
+.search-input {
+  flex: 1;
+  height: 72rpx;
+  font-size: 28rpx;
+}
+
+.clear-button {
+  color: #9a4f25;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.date-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+  margin-top: 18rpx;
+}
+
+.date-cell {
+  min-height: 104rpx;
+  padding: 16rpx 18rpx;
+  border: 1rpx solid rgba(36, 48, 39, 0.1);
+  border-radius: 8rpx;
+  background: #fffaf1;
+}
+
+.guest-cell {
+  grid-column: span 2;
+}
+
+.date-label {
+  display: block;
+  color: #7c857e;
+  font-size: 22rpx;
+}
+
+.date-value {
+  margin-top: 10rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.guest-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8rpx;
+}
+
+.stepper-button {
+  width: 64rpx;
+  height: 56rpx;
+  border-radius: 8rpx;
+  background: #e4f0e7;
+  color: #2f6f4e;
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.guest-count {
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
+.chip-scroll {
+  width: 100%;
+  margin-top: 18rpx;
+  white-space: nowrap;
+}
+
+.chip-row {
+  display: flex;
+  gap: 16rpx;
+  padding-bottom: 4rpx;
+}
+
+.homestay-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  margin-top: 20rpx;
+}
+
+.homestay-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.homestay-cover {
+  width: 100%;
+  height: 360rpx;
+  background: #d8d0c1;
+}
+
+.homestay-body {
+  padding: 22rpx;
+}
+
+.homestay-topline,
+.homestay-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.homestay-area,
+.homestay-tagline,
+.capacity {
+  color: #68746c;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.homestay-rating {
+  color: #9a4f25;
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.homestay-name {
+  margin-top: 8rpx;
+  font-size: 34rpx;
+  line-height: 44rpx;
+  font-weight: 800;
+}
+
+.homestay-tagline {
+  margin-top: 8rpx;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 16rpx;
+}
+
+.tag {
+  padding: 8rpx 12rpx;
+  border-radius: 6rpx;
+  background: #f1eadc;
+  color: #5d655f;
+  font-size: 22rpx;
+}
+
+.homestay-footer {
+  margin-top: 18rpx;
+}

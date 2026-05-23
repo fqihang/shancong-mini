@@ -1,0 +1,19 @@
+<view class="page profile-page">
+  <view class="profile-hero">
+    <view class="profile-kicker">运营准备</view>
+    <view class="profile-title">民宿小程序上线前检查</view>
+    <view class="profile-text">这个页面用于把调研结论沉到产品里，后续可替换为个人中心或商家工作台。</view>
+  </view>
+
+  <view class="section">
+    <view wx:for="{{checklist}}" wx:key="title" class="check-card card">
+      <view class="check-index">{{index + 1}}</view>
+      <view class="check-content">
+        <view class="check-title">{{item.title}}</view>
+        <view class="check-desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </view>
+
+  <button class="primary-button service-button" bindtap="callService">联系运营负责人</button>
+</view>

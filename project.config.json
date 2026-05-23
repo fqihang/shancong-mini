@@ -1,0 +1,17 @@
+{
+  "description": "民宿展示与预订微信小程序 MVP",
+  "compileType": "miniprogram",
+  "appid": "touristappid",
+  "projectname": "wechat-homestay-booking",
+  "miniprogramRoot": "./",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "coverView": true,
+    "ignoreUploadUnusedFiles": true
+  },
+  "condition": {}
+}

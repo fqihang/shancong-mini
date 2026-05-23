@@ -1,0 +1,35 @@
+<view class="page orders-page">
+  <view class="section-title">我的预订</view>
+  <view class="section-subtitle">当前 MVP 使用本地缓存保存订单，接入云开发后会同步到服务端。</view>
+
+  <view wx:if="{{orders.length === 0}}" class="empty card">
+    <view class="empty-title">暂无订单</view>
+    <view class="empty-text">选择一个喜欢的民宿，提交预订后会出现在这里。</view>
+    <button class="primary-button empty-button" bindtap="goHome">去看看</button>
+  </view>
+
+  <view class="order-list">
+    <view wx:for="{{orders}}" wx:key="id" class="order-card card">
+      <image class="order-cover" src="{{item.roomCover}}" mode="aspectFill" />
+      <view class="order-body">
+        <view class="order-header">
+          <view>
+            <view class="order-name">{{item.roomName}}</view>
+            <view class="order-meta">{{item.city}} · {{item.area}}</view>
+          </view>
+          <view class="status {{item.status === '已取消' ? 'cancelled' : ''}}">{{item.status}}</view>
+        </view>
+        <view class="order-line">{{item.checkIn}} 至 {{item.checkOut}} · {{item.nights}} 晚 · {{item.guests}} 人</view>
+        <view class="order-line">联系人 {{item.contactName}} · {{item.phone}}</view>
+        <view wx:if="{{item.remark}}" class="order-line">备注：{{item.remark}}</view>
+        <view class="order-footer">
+          <text class="price">¥{{item.payable}}</text>
+          <view class="order-actions">
+            <button class="ghost-mini" data-id="{{item.id}}" bindtap="contact">联系管家</button>
+            <button wx:if="{{item.status !== '已取消'}}" class="danger-mini" data-id="{{item.id}}" bindtap="cancel">取消</button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
