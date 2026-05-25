@@ -1,13 +1,11 @@
 {
   "pages": [
     "pages/home/home",
-    "pages/detail/detail",
-    "pages/booking/booking",
-    "pages/orders/orders",
-    "pages/profile/profile"
+    "pages/contact/contact",
+    "pages/detail/detail"
   ],
   "window": {
-    "navigationBarTitleText": "山野栖居",
+    "navigationBarTitleText": "山从",
     "navigationBarBackgroundColor": "#F7F3EA",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#F7F3EA",

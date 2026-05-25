@@ -11,9 +11,10 @@
         <view class="location">{{room.city}} · {{room.area}}</view>
         <view class="room-name">{{room.name}}</view>
       </view>
-      <view class="rating">★ {{room.rating}}</view>
+      <view class="rating">{{room.type}}</view>
     </view>
     <view class="tagline">{{room.tagline}}</view>
+    <view class="address-line">{{room.address}}</view>
 
     <view class="fact-grid">
       <view class="fact">
@@ -25,46 +26,23 @@
         <text class="fact-label">户型</text>
       </view>
       <view class="fact">
-        <text class="fact-value">{{room.reviews}}</text>
-        <text class="fact-label">评价数</text>
+        <text class="fact-value">{{room.type}}</text>
+        <text class="fact-label">空间气质</text>
       </view>
     </view>
 
-    <view class="section card booking-card">
-      <view class="section-title">选择行程</view>
-      <view class="booking-grid">
-        <view class="booking-field">
-          <text>入住</text>
-          <picker mode="date" value="{{checkIn}}" bindchange="onCheckInChange">
-            <view>{{checkIn}}</view>
-          </picker>
+    <view class="section card space-card">
+      <view class="section-title">空间气质</view>
+      <view class="space-text">这不是标准化酒店房型，更像山里的一段停留。房间、路况和停留方式建议先联系店主确认。</view>
+      <view class="space-meta">
+        <view>
+          <text>床型</text>
+          <view>{{room.beds}}</view>
         </view>
-        <view class="booking-field">
-          <text>离店</text>
-          <picker mode="date" value="{{checkOut}}" bindchange="onCheckOutChange">
-            <view>{{checkOut}}</view>
-          </picker>
+        <view>
+          <text>咨询</text>
+          <view>电话 / 微信</view>
         </view>
-        <view class="booking-field guest-field">
-          <text>人数</text>
-          <view class="guest-stepper">
-            <button class="stepper-button" bindtap="decreaseGuests">-</button>
-            <text>{{guests}}</text>
-            <button class="stepper-button" bindtap="increaseGuests">+</button>
-          </view>
-        </view>
-      </view>
-      <view class="quote-row">
-        <text>房费 ¥{{room.price}} × {{nights}} 晚</text>
-        <text>¥{{roomTotal}}</text>
-      </view>
-      <view class="quote-row">
-        <text>服务费</text>
-        <text>¥{{serviceFee}}</text>
-      </view>
-      <view class="quote-total">
-        <text>合计</text>
-        <text>¥{{payable}}</text>
       </view>
     </view>
 
@@ -84,8 +62,8 @@
 
     <view class="section card host-card">
       <view>
-        <view class="host-name">房东 {{room.host.name}}</view>
-        <view class="host-response">{{room.host.response}}</view>
+        <view class="host-name">{{site.contact.hostName}}</view>
+        <view class="host-response">{{site.contact.responseText}}</view>
       </view>
       <button class="secondary-button host-button" bindtap="callHost">电话咨询</button>
     </view>
@@ -97,10 +75,7 @@
   </view>
 
   <view class="bottom-bar">
-    <view>
-      <text class="bottom-price">¥{{room.price}}</text>
-      <text class="bottom-unit">/晚起</text>
-    </view>
-    <button class="primary-button book-button" bindtap="goBooking">立即预订</button>
+    <button class="ghost-button bottom-button" bindtap="callHost">电话咨询</button>
+    <button class="primary-button bottom-button" bindtap="goContact">联系店主</button>
   </view>
 </view>

@@ -1,104 +1,91 @@
-<view class="page home-page">
-  <view class="hero">
-    <image class="hero-image" src="https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=80" mode="aspectFill" />
+<view class="home-page">
+  <view class="hero-showcase">
+    <image class="hero-image" src="{{site.hero.image}}" mode="aspectFill" />
     <view class="hero-mask"></view>
     <view class="hero-content">
-      <view class="hero-kicker">精品民宿精选</view>
-      <view class="hero-title">把周末交给山海与庭院</view>
-      <view class="hero-text">精选适合家庭、情侣和小团队的独栋与整租民宿。</view>
+      <view class="hero-kicker">{{site.hero.kicker}}</view>
+      <view class="hero-title">{{site.hero.title}}</view>
+      <view class="hero-text">{{site.hero.text}}</view>
+      <view class="hero-points">
+        <text wx:for="{{sellingPoints}}" wx:key="*this">{{item}}</text>
+      </view>
     </view>
   </view>
 
-  <view class="quick-actions">
-    <button class="quick-action" bindtap="goOrders">订单</button>
-    <button class="quick-action" bindtap="goProfile">上线清单</button>
+  <view class="intro-band">
+    <view class="intro-location">{{site.locationText}}</view>
+    <view class="intro-title">{{site.intro.title}}</view>
+    <view class="intro-text">{{site.intro.text}}</view>
   </view>
 
-  <view class="search-card card">
-    <view class="search-row">
-      <input class="search-input" value="{{query}}" placeholder="搜索目的地、民宿、标签" bindinput="onSearchInput" />
-      <button wx:if="{{query}}" class="clear-button" bindtap="clearSearch">清除</button>
-    </view>
-    <view class="date-grid">
-      <view class="date-cell">
-        <text class="date-label">入住</text>
-        <picker mode="date" value="{{checkIn}}" bindchange="onCheckInChange">
-          <view class="date-value">{{checkIn}}</view>
-        </picker>
+  <view class="gallery-stack">
+    <block wx:for="{{gallerySections}}" wx:key="id">
+      <view wx:if="{{item.template == 'feature_landscape'}}" class="gallery-panel feature-landscape">
+        <image class="feature-image" src="{{item.slots.cover.src}}" mode="aspectFill" />
+        <view class="gallery-copy">
+          <view class="gallery-eyebrow">{{item.copy.eyebrow}}</view>
+          <view class="gallery-title">{{item.copy.title}}</view>
+          <view class="gallery-text">{{item.copy.text}}</view>
+        </view>
       </view>
-      <view class="date-cell">
-        <text class="date-label">离店</text>
-        <picker mode="date" value="{{checkOut}}" bindchange="onCheckOutChange">
-          <view class="date-value">{{checkOut}}</view>
-        </picker>
+
+      <view wx:elif="{{item.template == 'portrait_pair'}}" class="gallery-panel portrait-pair">
+        <view class="gallery-copy static-copy">
+          <view class="gallery-eyebrow">{{item.copy.eyebrow}}</view>
+          <view class="gallery-title">{{item.copy.title}}</view>
+          <view class="gallery-text">{{item.copy.text}}</view>
+        </view>
+        <view class="portrait-grid">
+          <image class="portrait-image" src="{{item.slots.left.src}}" mode="aspectFill" />
+          <image class="portrait-image" src="{{item.slots.right.src}}" mode="aspectFill" />
+        </view>
       </view>
-      <view class="date-cell guest-cell">
-        <text class="date-label">人数</text>
-        <view class="guest-stepper">
-          <button class="stepper-button" bindtap="decreaseGuests">-</button>
-          <text class="guest-count">{{guests}}</text>
-          <button class="stepper-button" bindtap="increaseGuests">+</button>
+
+      <view wx:elif="{{item.template == 'mixed_mosaic'}}" class="gallery-panel mixed-mosaic">
+        <image class="mosaic-wide" src="{{item.slots.wide.src}}" mode="aspectFill" />
+        <view class="mosaic-row">
+          <view class="mosaic-copy">
+            <view class="gallery-eyebrow">{{item.copy.eyebrow}}</view>
+            <view class="gallery-title">{{item.copy.title}}</view>
+            <view class="gallery-text">{{item.copy.text}}</view>
+          </view>
+          <image class="mosaic-tall" src="{{item.slots.tall.src}}" mode="aspectFill" />
+        </view>
+      </view>
+
+      <view wx:elif="{{item.template == 'single_portrait'}}" class="gallery-panel single-portrait">
+        <image class="single-portrait-image" src="{{item.slots.cover.src}}" mode="aspectFill" />
+        <view class="gallery-copy static-copy">
+          <view class="gallery-eyebrow">{{item.copy.eyebrow}}</view>
+          <view class="gallery-title">{{item.copy.title}}</view>
+          <view class="gallery-text">{{item.copy.text}}</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="rooms-section">
+    <view class="section-title">房间掠影</view>
+    <view class="section-subtitle">先看空间气质，想了解细节可以直接联系店主。</view>
+    <view class="room-grid">
+      <view wx:for="{{rooms}}" wx:key="id" class="room-tile" data-id="{{item.id}}" bindtap="goDetail">
+        <image class="room-image" src="{{item.cover}}" mode="aspectFill" />
+        <view class="room-body">
+          <view class="room-name">{{item.name}}</view>
+          <view class="room-line">{{item.tagline}}</view>
+          <view class="room-tags">
+            <text wx:for="{{item.tags}}" wx:key="*this">{{item}}</text>
+          </view>
         </view>
       </view>
     </view>
   </view>
 
-  <view class="section">
-    <view class="section-title">目的地</view>
-    <scroll-view class="chip-scroll" scroll-x enhanced show-scrollbar="{{false}}">
-      <view class="chip-row">
-        <button
-          wx:for="{{cityTabs}}"
-          wx:key="*this"
-          class="pill {{activeCity === item ? 'active' : ''}}"
-          data-city="{{item}}"
-          bindtap="changeCity"
-        >{{item}}</button>
-      </view>
-    </scroll-view>
-  </view>
-
-  <view class="section">
-    <view class="section-title">风格</view>
-    <scroll-view class="chip-scroll" scroll-x enhanced show-scrollbar="{{false}}">
-      <view class="chip-row">
-        <button
-          wx:for="{{typeTabs}}"
-          wx:key="*this"
-          class="pill {{activeType === item ? 'active' : ''}}"
-          data-type="{{item}}"
-          bindtap="changeType"
-        >{{item}}</button>
-      </view>
-    </scroll-view>
-  </view>
-
-  <view class="section">
-    <view class="section-title">可预订民宿</view>
-    <view class="section-subtitle">已按日期、人数和筛选条件展示</view>
-    <view class="homestay-list">
-      <view wx:for="{{filteredHomestays}}" wx:key="id" class="homestay-card card" data-id="{{item.id}}" bindtap="goDetail">
-        <image class="homestay-cover" src="{{item.cover}}" mode="aspectFill" />
-        <view class="homestay-body">
-          <view class="homestay-topline">
-            <text class="homestay-area">{{item.city}} · {{item.area}}</text>
-            <text class="homestay-rating">★ {{item.rating}}</text>
-          </view>
-          <view class="homestay-name">{{item.name}}</view>
-          <view class="homestay-tagline">{{item.tagline}}</view>
-          <view class="tag-row">
-            <text wx:for="{{item.tags}}" wx:key="*this" class="tag">{{item}}</text>
-          </view>
-          <view class="homestay-footer">
-            <text class="capacity">最多 {{item.capacity}} 人 · {{item.rooms}}</text>
-            <text class="price">¥{{item.price}}/晚</text>
-          </view>
-        </view>
-      </view>
+  <view class="lead-band">
+    <view>
+      <view class="lead-title">想了解山里的真实情况？</view>
+      <view class="lead-text">电话、微信、地址和平台入口都整理在这里，出发前先确认更稳。</view>
     </view>
-    <view wx:if="{{filteredHomestays.length === 0}}" class="empty card">
-      <view class="empty-title">没有符合条件的房源</view>
-      <view class="empty-text">可以减少人数或切换目的地后再试。</view>
-    </view>
+    <button class="lead-button" bindtap="goContact">联系山从</button>
   </view>
 </view>

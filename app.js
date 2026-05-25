@@ -1,13 +1,12 @@
+const { getSiteConfig } = require("./utils/site");
+
+const site = getSiteConfig();
+
 App({
   globalData: {
-    brandName: "山野栖居",
-    servicePhone: "13800138000"
+    brandName: site.brandName,
+    servicePhone: site.contact.phone
   },
 
-  onLaunch() {
-    const orders = wx.getStorageSync("homestay_orders");
-    if (!Array.isArray(orders)) {
-      wx.setStorageSync("homestay_orders", []);
-    }
-  }
+  onLaunch() {}
 });

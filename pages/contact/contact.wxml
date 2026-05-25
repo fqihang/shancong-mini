@@ -1,0 +1,62 @@
+<view class="contact-page">
+  <view class="contact-hero">
+    <view class="hero-kicker">{{site.locationText}}</view>
+    <view class="hero-title">联系山从</view>
+    <view class="hero-text">{{site.contact.responseText}}</view>
+  </view>
+
+  <view class="quick-grid">
+    <button class="quick-card" bindtap="callHost">
+      <view class="quick-label">电话</view>
+      <view class="quick-value">{{site.contact.phone}}</view>
+      <view class="quick-action">拨打</view>
+    </button>
+    <button class="quick-card" bindtap="copyWechat">
+      <view class="quick-label">微信</view>
+      <view class="quick-value">{{site.contact.wechatId}}</view>
+      <view class="quick-action">复制</view>
+    </button>
+  </view>
+
+  <view class="section card address-card">
+    <view class="section-title">到山从</view>
+    <view class="address-text">{{site.address}}</view>
+    <button class="ghost-button address-button" bindtap="copyAddress">复制地址</button>
+  </view>
+
+  <view wx:if="{{site.wxCustomerServiceEnabled}}" class="section card service-card">
+    <view>
+      <view class="section-title">微信客服</view>
+      <view class="service-text">使用小程序官方客服入口继续咨询。</view>
+    </view>
+    <button class="secondary-button service-button" open-type="contact">打开</button>
+  </view>
+
+  <view wx:if="{{leadLinks.length}}" class="section link-section">
+    <view class="section-title">平台入口</view>
+    <view class="section-subtitle">近期图文、地图和平台信息都可以从这里继续查看。</view>
+    <view class="link-list">
+      <button wx:for="{{leadLinks}}" wx:key="id" class="link-card" data-id="{{item.id}}" bindtap="copyLeadLink">
+        <view>
+          <view class="link-title">{{item.title}}</view>
+          <view class="link-summary">{{item.summary}}</view>
+        </view>
+        <view class="link-action">复制</view>
+      </button>
+    </view>
+  </view>
+
+  <view wx:if="{{miniProgramLinks.length}}" class="section link-section">
+    <view class="section-title">小程序跳转</view>
+    <view class="section-subtitle">打开山从已经配置好的外部平台入口。</view>
+    <view class="link-list">
+      <button wx:for="{{miniProgramLinks}}" wx:key="id" class="link-card" data-id="{{item.id}}" bindtap="openMiniProgram">
+        <view>
+          <view class="link-title">{{item.title}}</view>
+          <view class="link-summary">{{item.summary}}</view>
+        </view>
+        <view class="link-action">打开</view>
+      </button>
+    </view>
+  </view>
+</view>
