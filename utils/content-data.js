@@ -1,0 +1,529 @@
+// This file is generated from content/site.json.
+// Run `node scripts/sync-site-config.js` after editing content/site.json.
+module.exports = {
+  "version": 1,
+  "site": {
+    "brandName": "山从",
+    "locationText": "湖北 · 恩施 · 鹤峰县",
+    "address": "湖北省恩施土家族苗族自治州鹤峰县山从民宿"
+  },
+  "share": {
+    "title": "山从｜恩施鹤峰深山民宿",
+    "path": "/pages/home/home",
+    "image": "hero_mountain_house"
+  },
+  "assets": [
+    {
+      "id": "hero_mountain_house",
+      "src": "https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1200&q=80",
+      "localTarget": "/assets/photos/landscape/hero-mountain-house-01.jpg",
+      "orientation": "landscape",
+      "alt": "深山里的山从民宿建筑",
+      "tags": [
+        "首页",
+        "深山",
+        "建筑"
+      ]
+    },
+    {
+      "id": "scene_deep_mountain",
+      "src": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
+      "localTarget": "/assets/photos/landscape/scene-deep-mountain-01.jpg",
+      "orientation": "landscape",
+      "alt": "恩施鹤峰深山环境",
+      "tags": [
+        "深山",
+        "安静"
+      ]
+    },
+    {
+      "id": "scene_stream",
+      "src": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=1200&q=80",
+      "localTarget": "/assets/photos/landscape/scene-stream-01.jpg",
+      "orientation": "landscape",
+      "alt": "天然溪流和山谷",
+      "tags": [
+        "溪流",
+        "避暑"
+      ]
+    },
+    {
+      "id": "room_window_portrait",
+      "src": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&h=1300&q=80",
+      "localTarget": "/assets/photos/portrait/room-window-01.jpg",
+      "orientation": "portrait",
+      "alt": "漂亮房间和柔和光线",
+      "tags": [
+        "房间",
+        "拍照"
+      ]
+    },
+    {
+      "id": "room_linen_portrait",
+      "src": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&h=1300&q=80",
+      "localTarget": "/assets/photos/portrait/room-linen-01.jpg",
+      "orientation": "portrait",
+      "alt": "床品和房间细节",
+      "tags": [
+        "房间",
+        "细节"
+      ]
+    },
+    {
+      "id": "coffee_landscape",
+      "src": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1200&q=80",
+      "localTarget": "/assets/photos/landscape/coffee-bar-01.jpg",
+      "orientation": "landscape",
+      "alt": "山野咖啡",
+      "tags": [
+        "咖啡",
+        "公共区"
+      ]
+    },
+    {
+      "id": "coffee_pour_portrait",
+      "src": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=900&h=1300&q=80",
+      "localTarget": "/assets/photos/portrait/coffee-pour-01.jpg",
+      "orientation": "portrait",
+      "alt": "手冲咖啡特写",
+      "tags": [
+        "咖啡",
+        "特写"
+      ]
+    }
+  ],
+  "templates": [
+    {
+      "id": "feature_landscape",
+      "name": "横图沉浸大卡",
+      "summary": "一张横屏大图配底部文字，适合山景、溪流、建筑和公共区。",
+      "renderer": "feature_landscape",
+      "slots": [
+        {
+          "id": "cover",
+          "type": "image",
+          "orientation": "landscape",
+          "required": true
+        }
+      ],
+      "fields": [
+        {
+          "id": "eyebrow",
+          "type": "text",
+          "maxLength": 16,
+          "required": false
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "maxLength": 18,
+          "required": true
+        },
+        {
+          "id": "text",
+          "type": "text",
+          "maxLength": 54,
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "portrait_pair",
+      "name": "双竖图并排",
+      "summary": "两张竖屏图并排，适合房间、咖啡、床品和窗景细节。",
+      "renderer": "portrait_pair",
+      "slots": [
+        {
+          "id": "left",
+          "type": "image",
+          "orientation": "portrait",
+          "required": true
+        },
+        {
+          "id": "right",
+          "type": "image",
+          "orientation": "portrait",
+          "required": true
+        }
+      ],
+      "fields": [
+        {
+          "id": "eyebrow",
+          "type": "text",
+          "maxLength": 16,
+          "required": false
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "maxLength": 18,
+          "required": true
+        },
+        {
+          "id": "text",
+          "type": "text",
+          "maxLength": 54,
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "mixed_mosaic",
+      "name": "横图加竖图拼贴",
+      "summary": "一张横屏主图加一张竖屏侧图，适合讲一个场景和一个细节。",
+      "renderer": "mixed_mosaic",
+      "slots": [
+        {
+          "id": "wide",
+          "type": "image",
+          "orientation": "landscape",
+          "required": true
+        },
+        {
+          "id": "tall",
+          "type": "image",
+          "orientation": "portrait",
+          "required": true
+        }
+      ],
+      "fields": [
+        {
+          "id": "eyebrow",
+          "type": "text",
+          "maxLength": 16,
+          "required": false
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "maxLength": 18,
+          "required": true
+        },
+        {
+          "id": "text",
+          "type": "text",
+          "maxLength": 54,
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "single_portrait",
+      "name": "竖图留白卡",
+      "summary": "一张竖屏图配安静文案，适合特别漂亮的房间角落或咖啡特写。",
+      "renderer": "single_portrait",
+      "slots": [
+        {
+          "id": "cover",
+          "type": "image",
+          "orientation": "portrait",
+          "required": true
+        }
+      ],
+      "fields": [
+        {
+          "id": "eyebrow",
+          "type": "text",
+          "maxLength": 16,
+          "required": false
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "maxLength": 18,
+          "required": true
+        },
+        {
+          "id": "text",
+          "type": "text",
+          "maxLength": 54,
+          "required": true
+        }
+      ]
+    }
+  ],
+  "pages": {
+    "home": {
+      "hero": {
+        "image": "hero_mountain_house",
+        "kicker": "山从｜恩施鹤峰深山民宿",
+        "title": "住进深山溪流旁的安静夏天",
+        "text": "天然溪流、避暑山风、漂亮房间和一杯认真做的咖啡。",
+        "points": [
+          "深山",
+          "安静",
+          "天然溪流",
+          "避暑",
+          "漂亮房间",
+          "咖啡"
+        ]
+      },
+      "intro": {
+        "title": "山从不是一个赶行程的地方。",
+        "text": "它更像一段留白：在山里醒来，沿溪边走走，回到房间坐一会儿，再去喝咖啡。"
+      },
+      "sections": [
+        {
+          "id": "deep_mountain",
+          "enabled": true,
+          "template": "feature_landscape",
+          "slots": {
+            "cover": "scene_deep_mountain"
+          },
+          "copy": {
+            "eyebrow": "远离城市噪音",
+            "title": "深山",
+            "text": "山从在恩施鹤峰县的山里，白天听风，夜里听溪流和虫鸣。"
+          }
+        },
+        {
+          "id": "natural_stream",
+          "enabled": true,
+          "template": "feature_landscape",
+          "slots": {
+            "cover": "scene_stream"
+          },
+          "copy": {
+            "eyebrow": "夏天的清凉来自山谷",
+            "title": "天然溪流",
+            "text": "溪水从民宿旁经过，适合散步、放空，也让夏季停留更舒服。"
+          }
+        },
+        {
+          "id": "beautiful_rooms",
+          "enabled": true,
+          "template": "portrait_pair",
+          "slots": {
+            "left": "room_window_portrait",
+            "right": "room_linen_portrait"
+          },
+          "copy": {
+            "eyebrow": "住下来也想拍照",
+            "title": "漂亮房间",
+            "text": "自然材质、柔和光线和干净留白，把睡眠和审美放在一起。"
+          }
+        },
+        {
+          "id": "mountain_coffee",
+          "enabled": true,
+          "template": "mixed_mosaic",
+          "slots": {
+            "wide": "coffee_landscape",
+            "tall": "coffee_pour_portrait"
+          },
+          "copy": {
+            "eyebrow": "早晨从一杯咖啡开始",
+            "title": "山野咖啡",
+            "text": "在山雾还没散的时候，喝一杯认真做的咖啡，再慢慢开始一天。"
+          }
+        }
+      ]
+    },
+    "rooms": [
+      {
+        "id": "hs001",
+        "name": "山从 · 溪流大床房",
+        "tagline": "推窗见溪，睡进恩施鹤峰的深山安静里",
+        "city": "恩施",
+        "area": "鹤峰县",
+        "type": "溪流",
+        "price": 880,
+        "rating": 4.9,
+        "reviews": 86,
+        "capacity": 2,
+        "beds": "1张观景大床",
+        "rooms": "一室一卫一景窗",
+        "cover": "scene_deep_mountain",
+        "images": [
+          "scene_deep_mountain",
+          "hero_mountain_house",
+          "room_linen_portrait"
+        ],
+        "tags": [
+          "深山",
+          "天然溪流",
+          "安静"
+        ],
+        "amenities": [
+          "观景窗",
+          "独立卫浴",
+          "精品床品",
+          "咖啡",
+          "蓝牙音箱",
+          "停车位"
+        ],
+        "highlights": [
+          "民宿位于恩施鹤峰县深山环境，远离主路车流和城市噪音",
+          "天然溪流从房前山谷经过，适合放空、散步和夏季避暑",
+          "房间强调极简美学和舒适床品，适合情侣或独处休息"
+        ],
+        "policies": [
+          "14:00 后入住",
+          "12:00 前退房",
+          "入住需登记有效身份信息"
+        ]
+      },
+      {
+        "id": "hs002",
+        "name": "山从 · 咖啡露台房",
+        "tagline": "在山雾和溪声里喝一杯晨间咖啡",
+        "city": "恩施",
+        "area": "鹤峰县",
+        "type": "咖啡",
+        "price": 980,
+        "rating": 4.9,
+        "reviews": 72,
+        "capacity": 2,
+        "beds": "1张大床",
+        "rooms": "一室一卫一露台",
+        "cover": "coffee_landscape",
+        "images": [
+          "coffee_landscape",
+          "room_window_portrait",
+          "scene_deep_mountain"
+        ],
+        "tags": [
+          "咖啡",
+          "露台",
+          "避暑"
+        ],
+        "amenities": [
+          "咖啡吧",
+          "观景露台",
+          "独立卫浴",
+          "遮光窗帘",
+          "洗漱套装"
+        ],
+        "highlights": [
+          "主打山野咖啡体验，适合清晨看山雾、傍晚听溪水",
+          "露台面向山谷，夏季体感清凉，适合短住避暑",
+          "房间保留充足留白和自然材质，拍照和休息都更舒服"
+        ],
+        "policies": [
+          "14:00 后入住",
+          "12:00 前退房",
+          "22:00 后请降低室外音量"
+        ]
+      },
+      {
+        "id": "hs003",
+        "name": "山从 · 山景双床房",
+        "tagline": "适合好友同行，在安静山谷里清凉过夜",
+        "city": "恩施",
+        "area": "鹤峰县",
+        "type": "避暑",
+        "price": 920,
+        "rating": 4.8,
+        "reviews": 58,
+        "capacity": 3,
+        "beds": "2张单人床",
+        "rooms": "一室一卫",
+        "cover": "room_window_portrait",
+        "images": [
+          "room_window_portrait",
+          "room_linen_portrait",
+          "scene_deep_mountain"
+        ],
+        "tags": [
+          "避暑",
+          "山景",
+          "好友"
+        ],
+        "amenities": [
+          "山景窗",
+          "独立卫浴",
+          "空调",
+          "咖啡",
+          "停车位",
+          "行李寄存"
+        ],
+        "highlights": [
+          "适合朋友结伴、亲子短住或夏天来鹤峰避暑",
+          "房间安静度高，夜晚主要是溪流和虫鸣声",
+          "公共区可喝咖啡、阅读和整理旅行路线"
+        ],
+        "policies": [
+          "14:00 后入住",
+          "12:00 前退房",
+          "不可在房内明火烹饪"
+        ]
+      },
+      {
+        "id": "hs004",
+        "name": "山从 · 深山包栋",
+        "tagline": "把整段溪流、咖啡和安静山夜留给一群人",
+        "city": "恩施",
+        "area": "鹤峰县",
+        "type": "包栋",
+        "price": 3680,
+        "rating": 4.9,
+        "reviews": 41,
+        "capacity": 10,
+        "beds": "多间大床房与双床房",
+        "rooms": "整栋民宿包场",
+        "cover": "hero_mountain_house",
+        "images": [
+          "hero_mountain_house",
+          "scene_deep_mountain",
+          "coffee_landscape"
+        ],
+        "tags": [
+          "包栋",
+          "团建",
+          "深山"
+        ],
+        "amenities": [
+          "整栋独享",
+          "咖啡吧",
+          "溪流步道",
+          "公共客厅",
+          "停车位",
+          "管家服务"
+        ],
+        "highlights": [
+          "适合家庭聚会、小型团建或朋友结伴避暑",
+          "整栋独享，公共区可安排咖啡、茶歇和轻活动",
+          "在深山环境中保持足够私密和安静，适合连续住几晚"
+        ],
+        "policies": [
+          "15:00 后入住",
+          "11:00 前退房",
+          "包栋活动请提前确认人数和餐饮需求"
+        ]
+      }
+    ],
+    "contact": {
+      "hostName": "山从管家",
+      "phone": "13800138000",
+      "wechatId": "shancong_homestay",
+      "responseText": "山路、天气、房间和咖啡都建议出发前确认，电话或微信会更直接。"
+    }
+  },
+  "links": [
+    {
+      "id": "xiaohongshu",
+      "title": "小红书",
+      "summary": "查看山从近期图文、房间照片和住客笔记",
+      "type": "copy",
+      "value": "",
+      "enabled": false
+    },
+    {
+      "id": "map",
+      "title": "导航链接",
+      "summary": "复制地图定位链接，出发前发给同行人",
+      "type": "copy",
+      "value": "",
+      "enabled": false
+    },
+    {
+      "id": "external-platform",
+      "title": "预订平台",
+      "summary": "跳转到已配置的小程序平台查看档期",
+      "type": "miniProgram",
+      "appId": "",
+      "path": "",
+      "enabled": false
+    }
+  ]
+};
