@@ -1,60 +1,63 @@
-# 民宿展示与预订微信小程序
+# 山从民宿静态展示获客微信小程序
 
-这是一个原生微信小程序 MVP，用于调研和落地“民宿展示 + 预订确认”的核心链路。当前版本使用本地 mock 数据与本地缓存订单，便于先在微信开发者工具中验证交互；后续可平滑接入云开发、微信支付和商家后台。
+这是一个原生微信小程序，用于山从民宿的静态展示和获客。当前定位是完全不依赖云服务器：不做自有下单、不做支付、不做留言数据库，也不做店主后台。用户看图和了解卖点后，通过电话、微信、地址和外部平台入口继续沟通。
+
+山从位于湖北恩施鹤峰县，主打深山安静、天然溪流、夏季避暑、漂亮房间和咖啡体验。
 
 ## 当前功能
 
-- 首页：目的地/风格筛选、关键词搜索、入住离店日期、入住人数筛选。
-- 房源详情：图片轮播、亮点、设施、入住须知、费用估算、电话咨询。
-- 预订确认：联系人、手机号、到店时间、备注、费用明细、提交订单。
-- 我的订单：订单列表、本地取消、联系管家提示。
-- 上线清单：主体类目、隐私、支付、售后等运营准备项。
+- 首页：沉浸式图片展示、核心卖点、房间掠影、底部联系入口。
+- 房间详情：图集、空间气质、亮点、设施、入住须知、电话/联系店主。
+- 联系页：拨打电话、复制微信号、复制地址、可配置平台链接和小程序跳转。
+- 内容维护：统一维护在 `content/site.json`，再同步生成小程序运行时配置 `utils/content-data.js`。
 
 ## 运行方式
 
 1. 打开微信开发者工具。
 2. 选择“导入项目”，目录选择本仓库：`/Users/qihang.feng/Documents/AI/wechat-store`。
-3. AppID 暂用 `touristappid` 可本地预览；上线前替换为真实小程序 AppID。
-4. 当前 `project.config.json` 为了加载远程示例图片关闭了 `urlCheck`。正式环境应配置合法图片域名，或替换为本地/云存储图片。
+3. AppID 当前使用项目配置里的测试 AppID；上线前替换为真实小程序 AppID。
+4. 当前 `project.config.json` 为了加载远程示例图片关闭了 `urlCheck`。正式环境建议把图片换成本地素材，或配置合法图片域名。
 
-## 调研结论
+## 日常维护
 
-### 产品最小闭环
+### 内容维护
 
-民宿预订小程序的第一版不应从“大而全 OTA”开始。更稳的 MVP 是：
+第一版内容统一维护在 `content/site.json`。
 
-1. 房源展示：城市、区域、价格、容量、设施、图集、入住规则。
-2. 可订查询：日期、人数、库存占用、最低入住晚数、特殊价格日历。
-3. 预订提交：联系人、手机号、入住备注、价格快照、订单状态。
-4. 订单履约：待确认、待支付、已支付、已取消、退款中、已完成。
-5. 运营后台：房源维护、价格日历、订单确认、退款/取消处理。
+- `site`：品牌、地址和位置。
+- `share`：朋友圈/群分享标题、路径和分享图。
+- `assets`：所有图片资源，包含横屏/竖屏方向、路径、alt 和标签。
+- `templates`：首页 UI 模版定义。
+- `pages.home`：首页首屏、介绍和画廊 sections。
+- `pages.rooms`：房间展示内容。
+- `pages.contact`：电话、微信和联系说明。
+- `links`：小红书、地图、外部平台和小程序跳转。
 
-### 推荐技术方案
+改完内容后运行：
 
-- 前端：原生微信小程序，适合当前从零开始和后续提审。
-- 后端：微信云开发或自有 Node.js 服务。早期可用云开发降低运维成本，订单和支付回调仍需放在服务端。
-- 数据：`homestays`、`rooms`、`rate_calendars`、`orders`、`guests`、`refunds`、`banners`。
-- 图片：正式环境建议放在微信云存储或已备案 CDN，并在小程序后台配置合法域名。
-- 支付：服务端创建支付单并签名，小程序端调用 `wx.requestPayment`。
+```bash
+node scripts/validate-site-config.js
+node scripts/sync-site-config.js
+```
 
-### 合规与审核重点
+微信小程序不能直接读取普通数据 JSON，同步脚本会把 `content/site.json` 写成运行时使用的 `utils/content-data.js`。
 
-- 服务类目：住宿/旅游服务方向要与实际经营主体和资质一致。
-- 隐私：手机号、定位、入住人身份信息、客服消息、相册上传等都应在用户隐私保护指引中声明。
-- 交易：价格、取消规则、退款规则、押金、发票、入住核验要在下单前清晰展示。
-- 内容：房源图片、地址、房东信息、可售库存需真实，避免夸大宣传。
+### 图片目录
 
-## 后续实施顺序
+图片目录：
 
-1. 接云数据库：把 `utils/homestays.js` 和本地订单替换为云函数读写。
-2. 做库存锁定：提交订单时按日期范围锁库存，超时未支付释放。
-3. 接微信支付：服务端统一下单，小程序端调用支付，回调后更新订单。
-4. 加后台：房源、价格日历、订单确认、退款处理。
-5. 提审准备：服务类目、隐私协议、合法域名、备案、支付商户号、客服入口。
+- `assets/photos/landscape/`：横屏图，适合首屏、山景、溪流、建筑和公共区。
+- `assets/photos/portrait/`：竖屏图，适合房间、窗景、咖啡、床品和局部细节。
+
+## 产品边界
+
+- 不接云数据库，不保存用户留言。
+- 不做店主后台，内容通过代码配置维护。
+- 不做强交易链路，预订和咨询导向电话、微信或既有平台。
+- 如后续要直接打开 H5 页面，需要在微信小程序后台配置业务域名并使用 `web-view`。
 
 ## 参考资料
 
-- [微信开放文档：wx.requestPayment](https://developers.weixin.qq.com/miniprogram/dev/api/payment/wx.requestPayment.html)
+- [微信开放文档：web-view](https://developers.weixin.qq.com/miniprogram/dev/component/web-view.html)
+- [微信开放文档：wx.navigateToMiniProgram](https://developers.weixin.qq.com/miniprogram/dev/api/navigate/wx.navigateToMiniProgram.html)
 - [微信开放文档：小程序运营规范与开放服务类目](https://developers.weixin.qq.com/miniprogram/product/)
-- [微信开放文档：授权](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/authorize.html)
-- [微信开放文档：云开发](https://developers.weixin.qq.com/miniprogram/dev/wxcloud/basis/getting-started.html)
