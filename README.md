@@ -49,6 +49,8 @@ node scripts/sync-site-config.js
 - `assets/photos/landscape/`：横屏图，适合首屏、山景、溪流、建筑和公共区。
 - `assets/photos/portrait/`：竖屏图，适合房间、窗景、咖啡、床品和局部细节。
 
+把照片放进对应目录后，打开本地生成器的“素材库”面板，点击“扫描照片”，再点击“加入素材库”。生成器会自动把新照片写入 `content/site.json` 的 `assets`，并同步 `utils/content-data.js`。命名建议见 `assets/photos/README.md`。
+
 ### 本地内容生成器
 
 本地生成器用于生成 Demo 模版、引导店家配置内容、预览并生成小程序静态产物。
@@ -70,10 +72,11 @@ DeepSeek API key 只放本地，不提交仓库。任选一种方式：
 
 工作流：
 
-1. **AI 生成 Demo**：输入参考网页、案例文档和聊天要求，DeepSeek 会结合照片 metadata 生成 `templatePack` proposal。
-2. **保存模版**：确认后写入 `content/template-packs.json`。
-3. **店家配置 Workflow**：选择模版后，生成器按步骤引导配置基础信息、首屏、图片区块、联系方式和链接。
-4. **Preview / 编译产物**：Preview OK 后，生成最终 `content/site.json`，并同步为 `utils/content-data.js`。
+1. **素材库**：扫描 `assets/photos/landscape/` 和 `assets/photos/portrait/`，把新照片加入 `content/site.json`。
+2. **AI 生成 Demo**：输入参考网页、案例文档和聊天要求，DeepSeek 会结合照片 metadata 生成 `templatePack` proposal。
+3. **保存模版**：确认后写入 `content/template-packs.json`。
+4. **店家配置 Workflow**：选择模版后，生成器按步骤引导配置基础信息、首屏、图片区块、联系方式和链接。
+5. **Preview / 编译产物**：Preview OK 后，生成最终 `content/site.json`，并同步为 `utils/content-data.js`。
 
 Chat 只生成 proposal。AI 不直接覆盖小程序页面代码，也不自动发布小程序。
 

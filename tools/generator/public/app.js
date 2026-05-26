@@ -6,12 +6,17 @@ const state = {
   steps: [],
   progress: [],
   assetChoices: { hero: [], sections: {} },
+  assetScan: null,
   currentStepId: "basic",
   lastProposal: null
 };
 
 const els = {
   reloadBtn: document.querySelector("#reloadBtn"),
+  scanAssetsBtn: document.querySelector("#scanAssetsBtn"),
+  importAssetsBtn: document.querySelector("#importAssetsBtn"),
+  assetScanSummary: document.querySelector("#assetScanSummary"),
+  assetScanList: document.querySelector("#assetScanList"),
   validateBtn: document.querySelector("#validateBtn"),
   compileBtn: document.querySelector("#compileBtn"),
   validationBadge: document.querySelector("#validationBadge"),
@@ -243,6 +248,53 @@ function renderTemplateSelect() {
   if (state.selectedPack) {
     els.templatePackSelect.value = state.selectedPack.id;
   }
+}
+
+function renderAssetScan() {
+  const scan = state.assetScan;
+  if (!scan) {
+    els.assetScanSummary.textContent = "等待扫描。";
+    els.assetScanList.innerHTML = "";
+    els.importAssetsBtn.disabled = true;
+    return;
+  }
+  els.assetScanSummary.textContent = [
+    `目录：${scan.directories.join(" / ")}`,
+    `本地照片 ${scan.files.length} 张`,
+    `新照片 ${scan.newAssets.length} 张`,
+    `已配置 ${scan.existingAssets.length} 张`
+  ].join(" · ");
+  els.importAssetsBtn.disabled = scan.newAssets.length === 0;
+  const newItems = scan.newAssets.map((asset) => `
+    <article class="scan-card new">
+      <img src="${escapeHtml(asset.src)}" alt="" />
+      <div>
+        <strong>${escapeHtml(asset.id)}</strong>
+        <span>${escapeHtml(asset.orientation)} · ${escapeHtml(asset.alt)}</span>
+        <small>${escapeHtml((asset.tags || []).join(" · "))}</small>
+      </div>
+    </article>
+  `).join("");
+  const existingItems = scan.existingAssets.map((asset) => `
+    <article class="scan-card existing">
+      <img src="${escapeHtml(asset.src && asset.src.startsWith("/") ? asset.src : asset.localTarget || asset.src)}" alt="" />
+      <div>
+        <strong>${escapeHtml(asset.id)}</strong>
+        <span>已配置 · ${escapeHtml(asset.orientation)}</span>
+        <small>${escapeHtml(asset.alt || "")}</small>
+      </div>
+    </article>
+  `).join("");
+  els.assetScanList.innerHTML = `
+    <div class="scan-group">
+      <h3>新照片</h3>
+      ${newItems || "<p>没有发现新照片。</p>"}
+    </div>
+    <div class="scan-group">
+      <h3>已配置</h3>
+      ${existingItems || "<p>还没有本地照片被配置。</p>"}
+    </div>
+  `;
 }
 
 function renderSteps() {
@@ -546,6 +598,21 @@ async function loadSite() {
   await chooseTemplatePack(state.templatePacks[0] && state.templatePacks[0].id);
 }
 
+async function scanAssets() {
+  const payload = await requestJson("/api/assets/scan");
+  state.assetScan = payload.scan;
+  renderAssetScan();
+}
+
+async function importAssets() {
+  const payload = await requestJson("/api/assets/import", { method: "POST" });
+  state.site = payload.site;
+  state.assetScan = payload.scan;
+  renderAssetScan();
+  setStatus(`已加入 ${payload.importedCount} 张新照片。\n${payload.sync.stdout}`, "ok");
+  await chooseTemplatePack(state.selectedPack ? state.selectedPack.id : state.templatePacks[0] && state.templatePacks[0].id);
+}
+
 async function validateCurrentDraft() {
   const payload = await requestJson("/api/validate", {
     method: "POST",
@@ -669,6 +736,8 @@ els.draftEditor.addEventListener("change", () => {
 });
 
 els.reloadBtn.addEventListener("click", () => loadSite().catch((error) => setStatus(error.message, "bad")));
+els.scanAssetsBtn.addEventListener("click", () => scanAssets().catch((error) => setStatus(error.message, "bad")));
+els.importAssetsBtn.addEventListener("click", () => importAssets().catch((error) => setStatus(error.message, "bad")));
 els.validateBtn.addEventListener("click", () => validateCurrentDraft().catch((error) => setStatus(error.message, "bad")));
 els.compileBtn.addEventListener("click", () => compileDraft().catch((error) => setStatus(error.message, "bad")));
 els.prevStepBtn.addEventListener("click", () => moveStep(-1));

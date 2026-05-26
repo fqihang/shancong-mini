@@ -105,7 +105,7 @@ p {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(360px, 1fr) minmax(360px, 1fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(340px, 0.82fr) minmax(360px, 1fr) minmax(360px, 1fr) minmax(320px, 0.9fr);
   gap: 16px;
   padding: 16px;
   min-height: calc(100vh - 74px);
@@ -339,6 +339,97 @@ select {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
+}
+
+.asset-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.asset-panel .panel-head {
+  align-items: center;
+}
+
+.asset-scan-summary {
+  margin: 16px;
+  padding: 10px;
+  border-radius: 6px;
+  background: #f6f1e8;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.asset-scan-list {
+  flex: 1;
+  overflow: auto;
+  padding: 0 16px 16px;
+}
+
+.scan-group + .scan-group {
+  margin-top: 16px;
+}
+
+.scan-group h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.scan-group p {
+  padding: 10px;
+  border-radius: 6px;
+  background: #f6f1e8;
+}
+
+.scan-card {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.scan-card + .scan-card {
+  margin-top: 8px;
+}
+
+.scan-card.new {
+  border-color: rgba(47, 111, 78, 0.35);
+}
+
+.scan-card img {
+  width: 76px;
+  height: 58px;
+  border-radius: 5px;
+  object-fit: cover;
+  background: #d8d0c1;
+}
+
+.scan-card strong,
+.scan-card span,
+.scan-card small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.scan-card strong {
+  font-size: 12px;
+}
+
+.scan-card span,
+.scan-card small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.asset-actions {
+  padding: 0 16px 16px;
+}
+
+.asset-actions button {
+  width: 100%;
 }
 
 .asset-item {

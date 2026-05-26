@@ -3,6 +3,10 @@ const http = require("http");
 const path = require("path");
 const { spawn } = require("child_process");
 const {
+  mergeScannedAssets,
+  scanPhotoLibrary
+} = require("./lib/assets");
+const {
   validateSiteConfig
 } = require("../../scripts/lib/site-validator");
 const {
@@ -545,6 +549,33 @@ async function handleApi(req, res) {
     if (req.method === "POST" && requestUrl.pathname === "/api/sync") {
       const sync = await runNodeScript(path.join(repoRoot, "scripts/sync-site-config.js"));
       sendJson(res, 200, { sync });
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/assets/scan") {
+      const site = readSite();
+      sendJson(res, 200, { scan: scanPhotoLibrary(repoRoot, site) });
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/assets/import") {
+      const site = readSite();
+      const scan = scanPhotoLibrary(repoRoot, site);
+      const nextSite = mergeScannedAssets(site, scan.newAssets);
+      const validation = validate(nextSite);
+      if (!validation.valid) {
+        sendJson(res, 400, { site: nextSite, validation });
+        return;
+      }
+      writeSite(nextSite);
+      const sync = await runNodeScript(path.join(repoRoot, "scripts/sync-site-config.js"));
+      sendJson(res, 200, {
+        site: nextSite,
+        importedCount: scan.newAssets.length,
+        scan: scanPhotoLibrary(repoRoot, nextSite),
+        validation,
+        sync
+      });
       return;
     }
 

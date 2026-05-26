@@ -20,6 +20,21 @@
     </header>
 
     <main class="workspace">
+      <section class="panel asset-panel">
+        <div class="panel-head">
+          <div>
+            <h2>0. 素材库</h2>
+            <p>把照片放进横屏/竖屏目录后扫描，确认后加入 `content/site.json`。</p>
+          </div>
+          <button id="scanAssetsBtn" type="button">扫描照片</button>
+        </div>
+        <div id="assetScanSummary" class="asset-scan-summary">等待扫描。</div>
+        <div id="assetScanList" class="asset-scan-list"></div>
+        <div class="asset-actions">
+          <button id="importAssetsBtn" type="button" class="primary" disabled>加入素材库</button>
+        </div>
+      </section>
+
       <section class="panel demo-panel">
         <div class="panel-head">
           <div>
