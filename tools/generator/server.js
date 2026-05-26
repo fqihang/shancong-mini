@@ -529,7 +529,8 @@ async function handleApi(req, res) {
         flowState: buildGeneratorFlowState(
           site,
           templatePackPayload.templatePacks,
-          templatePackPayload.templatePacks[0] ? buildWorkflowSteps(templatePackPayload.templatePacks[0]) : []
+          templatePackPayload.templatePacks[0] ? buildWorkflowSteps(templatePackPayload.templatePacks[0]) : [],
+          { deepSeekConfigured: Boolean(getDeepSeekKey()) }
         )
       });
       return;

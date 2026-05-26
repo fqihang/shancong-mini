@@ -193,9 +193,185 @@ p {
   transform: rotate(-22deg);
 }
 
+.pipeline-map {
+  margin: 16px 16px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.76);
+}
+
+.pipeline-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 14px;
+}
+
+.pipeline-head p {
+  max-width: 560px;
+  padding-top: 4px;
+}
+
+.pipeline-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.pipeline-row {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+}
+
+.pipeline-row-main {
+  grid-template-columns: minmax(150px, 1fr) 82px minmax(150px, 1fr) 82px minmax(190px, 1.18fr) 82px minmax(150px, 1fr);
+}
+
+.pipeline-row-support {
+  grid-template-columns: minmax(150px, 1fr) 82px minmax(150px, 1fr) 82px minmax(190px, 1.18fr) 82px minmax(150px, 1fr);
+}
+
+.pipeline-card {
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  min-height: 118px;
+  height: 100%;
+  padding: 14px;
+  border: 2px solid #1f2722;
+  border-radius: 26px;
+  background: #fffdf8;
+  text-align: left;
+  box-shadow: 0 5px 0 rgba(31, 39, 34, 0.04);
+}
+
+.pipeline-card:hover {
+  transform: translateY(-1px);
+}
+
+.pipeline-card-kicker {
+  color: #8b6546;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.pipeline-card strong {
+  font-size: 16px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.pipeline-card small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.pipeline-card.ready small {
+  color: var(--ok);
+}
+
+.pipeline-card.needs-key small,
+.pipeline-card.empty small {
+  color: var(--warn);
+}
+
+.pipeline-link {
+  height: 2px;
+  background: #1f2722;
+  position: relative;
+}
+
+.pipeline-link span {
+  position: absolute;
+  left: 50%;
+  top: -28px;
+  transform: translateX(-50%);
+  min-width: max-content;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.pipeline-link::before,
+.pipeline-link::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  width: 22px;
+  height: 2px;
+  background: #1f2722;
+  transform-origin: right center;
+}
+
+.pipeline-link::before {
+  transform: rotate(24deg);
+}
+
+.pipeline-link::after {
+  transform: rotate(-24deg);
+}
+
+.pipeline-support-note {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #f6f1e8;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pipeline-asset-stack {
+  display: grid;
+  gap: 8px;
+  justify-items: stretch;
+}
+
+.pipeline-up-link {
+  width: 2px;
+  height: 54px;
+  justify-self: center;
+  background: #1f2722;
+  position: relative;
+}
+
+.pipeline-up-link span {
+  position: absolute;
+  left: 18px;
+  top: 14px;
+  min-width: max-content;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.pipeline-up-link::before,
+.pipeline-up-link::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 2px;
+  background: #1f2722;
+  transform-origin: left center;
+}
+
+.pipeline-up-link::before {
+  transform: rotate(55deg);
+}
+
+.pipeline-up-link::after {
+  transform: rotate(125deg);
+}
+
 .workspace {
   display: grid;
-  grid-template-columns: minmax(340px, 0.82fr) minmax(360px, 1fr) minmax(360px, 1fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(310px, 0.82fr) minmax(330px, 1fr) minmax(330px, 1fr) minmax(300px, 0.9fr);
   gap: 16px;
   padding: 16px;
   min-height: calc(100vh - 74px);
@@ -885,6 +1061,51 @@ select {
 
   .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .pipeline-head {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .pipeline-row-main,
+  .pipeline-row-support {
+    grid-template-columns: 1fr;
+  }
+
+  .pipeline-row-support > div:empty {
+    display: none;
+  }
+
+  .pipeline-link,
+  .pipeline-row-support .pipeline-link {
+    width: 2px;
+    height: 42px;
+    justify-self: center;
+    transform: none;
+  }
+
+  .pipeline-link span {
+    left: 20px;
+    top: 9px;
+    transform: none;
+  }
+
+  .pipeline-link::before,
+  .pipeline-link::after {
+    bottom: 0;
+    right: auto;
+    left: 0;
+    width: 22px;
+    transform-origin: left center;
+  }
+
+  .pipeline-link::before {
+    transform: rotate(55deg);
+  }
+
+  .pipeline-link::after {
+    transform: rotate(125deg);
   }
 
   .preview-root {

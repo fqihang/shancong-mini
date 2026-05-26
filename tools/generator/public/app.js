@@ -9,6 +9,7 @@ const state = {
   assetScan: null,
   assetLibrary: [],
   flowState: null,
+  deepSeekConfigured: false,
   currentStepId: "basic",
   lastProposal: null
 };
@@ -25,6 +26,7 @@ const els = {
   flowTemplateCount: document.querySelector("#flowTemplateCount"),
   flowStepCount: document.querySelector("#flowStepCount"),
   flowOutputText: document.querySelector("#flowOutputText"),
+  pipelineMap: document.querySelector("#pipelineMap"),
   validateBtn: document.querySelector("#validateBtn"),
   compileBtn: document.querySelector("#compileBtn"),
   validationBadge: document.querySelector("#validationBadge"),
@@ -222,6 +224,65 @@ function progressById() {
   return Object.fromEntries((state.progress || []).map((step) => [step.id, step]));
 }
 
+function buildTemplatePipelineState() {
+  const packageArtifacts = ["content/site.json", "utils/content-data.js"];
+  const packCount = state.templatePacks.length;
+  const stepCount = state.steps.length;
+  const assetCount = state.site && state.site.assets ? state.site.assets.length : 0;
+  return {
+    title: "CMS-生成系统",
+    selectedTemplatePackId: state.selectedPack ? state.selectedPack.id : state.templatePacks[0] && state.templatePacks[0].id,
+    stages: [
+      {
+        id: "factory",
+        title: "模版制造",
+        subtitle: "AI聊天生成",
+        metric: state.deepSeekConfigured ? "DeepSeek 已配置" : "DeepSeek 未配置",
+        status: state.deepSeekConfigured ? "ready" : "needs-key",
+        target: "demo"
+      },
+      {
+        id: "library",
+        title: "模版库",
+        subtitle: "保存 AI 生成的模版文件",
+        metric: `${packCount} 个模版`,
+        status: packCount > 0 ? "ready" : "empty",
+        target: "template"
+      },
+      {
+        id: "editor",
+        title: "编辑器",
+        subtitle: "一步步的引导素材填空",
+        metric: `${stepCount} 步引导`,
+        status: stepCount > 0 ? "ready" : "empty",
+        target: "workflow"
+      },
+      {
+        id: "assets",
+        title: "素材库",
+        subtitle: "照片选择、编辑和补充 metadata",
+        metric: `${assetCount} 张素材`,
+        status: assetCount > 0 ? "ready" : "empty",
+        target: "assets"
+      },
+      {
+        id: "package",
+        title: "打包",
+        subtitle: "Preview OK 后生成小程序静态产物",
+        metric: packageArtifacts.join(" + "),
+        status: "ready",
+        target: "preview"
+      }
+    ],
+    connections: [
+      { from: "factory", to: "library", label: "模版文件" },
+      { from: "library", to: "editor", label: "模版选择" },
+      { from: "assets", to: "editor", label: "选择/编辑" },
+      { from: "editor", to: "package", label: "打包" }
+    ]
+  };
+}
+
 function refreshFlowState() {
   const home = state.site && state.site.pages && state.site.pages.home ? state.site.pages.home : {};
   state.flowState = {
@@ -235,7 +296,8 @@ function refreshFlowState() {
     },
     output: {
       artifacts: ["content/site.json", "utils/content-data.js"]
-    }
+    },
+    templatePipeline: buildTemplatePipelineState()
   };
 }
 
@@ -250,6 +312,57 @@ function renderFlowOverview() {
   els.flowTemplateCount.textContent = `模版 ${source.templatePackCount || 0}`;
   els.flowStepCount.textContent = `步骤 ${workflow.stepCount || 0}`;
   els.flowOutputText.textContent = (output.artifacts || []).join(" + ");
+  renderPipelineMap();
+}
+
+function renderPipelineConnection(pipeline, from, to) {
+  const connection = (pipeline.connections || []).find((item) => item.from === from && item.to === to);
+  if (!connection) {
+    return "";
+  }
+  return `<div class="pipeline-link" aria-hidden="true"><span>${escapeHtml(connection.label)}</span></div>`;
+}
+
+function renderPipelineCard(stage) {
+  return `
+    <button class="pipeline-card ${escapeHtml(stage.status)}" type="button" data-pipeline-target="${escapeHtml(stage.target)}">
+      <span class="pipeline-card-kicker">${escapeHtml(stage.title)}</span>
+      <strong>${escapeHtml(stage.subtitle)}</strong>
+      <small>${escapeHtml(stage.metric)}</small>
+    </button>
+  `;
+}
+
+function renderPipelineMap() {
+  const pipeline = state.flowState && state.flowState.templatePipeline;
+  if (!pipeline || !els.pipelineMap) {
+    return;
+  }
+  const stages = Object.fromEntries((pipeline.stages || []).map((stage) => [stage.id, stage]));
+  const assetConnection = (pipeline.connections || []).find((item) => item.from === "assets" && item.to === "editor");
+  els.pipelineMap.innerHTML = `
+    <div class="pipeline-row pipeline-row-main">
+      ${renderPipelineCard(stages.factory)}
+      ${renderPipelineConnection(pipeline, "factory", "library")}
+      ${renderPipelineCard(stages.library)}
+      ${renderPipelineConnection(pipeline, "library", "editor")}
+      ${renderPipelineCard(stages.editor)}
+      ${renderPipelineConnection(pipeline, "editor", "package")}
+      ${renderPipelineCard(stages.package)}
+    </div>
+    <div class="pipeline-row pipeline-row-support">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div class="pipeline-asset-stack">
+        <div class="pipeline-up-link" aria-hidden="true"><span>${escapeHtml(assetConnection ? assetConnection.label : "选择/编辑")}</span></div>
+        ${renderPipelineCard(stages.assets)}
+      </div>
+      <div></div>
+      <div class="pipeline-support-note">素材库向编辑器提供图片和 metadata</div>
+    </div>
+  `;
 }
 
 function selectedDraftSiteShape() {
@@ -665,7 +778,8 @@ async function loadSite() {
   state.site = payload.site;
   state.templatePacks = payload.templatePacks || [];
   state.flowState = payload.flowState;
-  setKeyBadge(payload.deepSeekConfigured);
+  state.deepSeekConfigured = Boolean(payload.deepSeekConfigured);
+  setKeyBadge(state.deepSeekConfigured);
   setStatus(formatValidation(payload.validation), payload.validation.valid ? "ok" : "bad");
   renderFlowOverview();
   await loadAssetLibrary();
@@ -857,5 +971,23 @@ els.nextStepBtn.addEventListener("click", () => moveStep(1));
 els.sendDemoBtn.addEventListener("click", sendDemoChat);
 els.saveProposalBtn.addEventListener("click", () => saveProposal().catch((error) => setStatus(error.message, "bad")));
 els.discardProposalBtn.addEventListener("click", discardProposal);
+els.pipelineMap.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-pipeline-target]");
+  if (!button) return;
+  const targets = {
+    assets: ".asset-panel",
+    demo: ".demo-panel",
+    template: "#templatePackSelect",
+    workflow: ".workflow-panel",
+    preview: ".preview-panel"
+  };
+  const target = document.querySelector(targets[button.dataset.pipelineTarget]);
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+    if (target.matches("select, input, textarea, button")) {
+      target.focus({ preventScroll: true });
+    }
+  }
+});
 
 loadSite().catch((error) => setStatus(error.message, "bad"));
