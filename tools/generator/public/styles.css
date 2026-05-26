@@ -432,6 +432,80 @@ select {
   width: 100%;
 }
 
+.asset-library-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px 10px;
+  border-top: 1px solid var(--line);
+}
+
+.asset-library-head h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.asset-library-list {
+  overflow: auto;
+  padding: 0 16px 16px;
+}
+
+.empty-library {
+  padding: 10px;
+  border-radius: 6px;
+  background: #f6f1e8;
+}
+
+.library-card {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 10px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.library-card + .library-card {
+  margin-top: 10px;
+}
+
+.library-card img {
+  width: 82px;
+  height: 92px;
+  border-radius: 5px;
+  object-fit: cover;
+  background: #d8d0c1;
+}
+
+.library-card-body {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.library-card-body input {
+  height: 32px;
+}
+
+.library-card-meta strong,
+.library-card-meta span,
+.library-card-body small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.library-card-meta strong {
+  font-size: 12px;
+}
+
+.library-card-meta span,
+.library-card-body small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .asset-item {
   border: 1px solid var(--line);
   border-radius: 6px;

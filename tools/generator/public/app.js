@@ -7,6 +7,7 @@ const state = {
   progress: [],
   assetChoices: { hero: [], sections: {} },
   assetScan: null,
+  assetLibrary: [],
   currentStepId: "basic",
   lastProposal: null
 };
@@ -15,8 +16,10 @@ const els = {
   reloadBtn: document.querySelector("#reloadBtn"),
   scanAssetsBtn: document.querySelector("#scanAssetsBtn"),
   importAssetsBtn: document.querySelector("#importAssetsBtn"),
+  saveAssetMetadataBtn: document.querySelector("#saveAssetMetadataBtn"),
   assetScanSummary: document.querySelector("#assetScanSummary"),
   assetScanList: document.querySelector("#assetScanList"),
+  assetLibraryList: document.querySelector("#assetLibraryList"),
   validateBtn: document.querySelector("#validateBtn"),
   compileBtn: document.querySelector("#compileBtn"),
   validationBadge: document.querySelector("#validationBadge"),
@@ -295,6 +298,37 @@ function renderAssetScan() {
       ${existingItems || "<p>还没有本地照片被配置。</p>"}
     </div>
   `;
+}
+
+function assetThumbSrc(asset) {
+  return asset.src || asset.localTarget || "";
+}
+
+function renderAssetLibrary() {
+  if (!state.assetLibrary.length) {
+    els.assetLibraryList.innerHTML = "<p class=\"empty-library\">暂无素材。先扫描并加入素材库。</p>";
+    return;
+  }
+  els.assetLibraryList.innerHTML = state.assetLibrary.map((asset) => `
+    <article class="library-card" data-asset-id="${escapeHtml(asset.id)}">
+      <img src="${escapeHtml(assetThumbSrc(asset))}" alt="" />
+      <div class="library-card-body">
+        <div class="library-card-meta">
+          <strong>${escapeHtml(asset.id)}</strong>
+          <span>${escapeHtml(asset.orientation)} · ${escapeHtml(asset.sourceType)} · ${asset.used ? "已使用" : "未使用"}</span>
+        </div>
+        <label>
+          <span>Alt</span>
+          <input data-asset-alt="${escapeHtml(asset.id)}" type="text" value="${escapeHtml(asset.alt || "")}" />
+        </label>
+        <label>
+          <span>Tags（逗号分隔）</span>
+          <input data-asset-tags="${escapeHtml(asset.id)}" type="text" value="${escapeHtml((asset.tags || []).join("，"))}" />
+        </label>
+        <small>${escapeHtml((asset.usage || []).join(" / ") || "暂未被页面使用")}</small>
+      </div>
+    </article>
+  `).join("");
 }
 
 function renderSteps() {
@@ -595,7 +629,14 @@ async function loadSite() {
   state.templatePacks = payload.templatePacks || [];
   setKeyBadge(payload.deepSeekConfigured);
   setStatus(formatValidation(payload.validation), payload.validation.valid ? "ok" : "bad");
+  await loadAssetLibrary();
   await chooseTemplatePack(state.templatePacks[0] && state.templatePacks[0].id);
+}
+
+async function loadAssetLibrary() {
+  const payload = await requestJson("/api/assets/library");
+  state.assetLibrary = payload.assets || [];
+  renderAssetLibrary();
 }
 
 async function scanAssets() {
@@ -608,9 +649,34 @@ async function importAssets() {
   const payload = await requestJson("/api/assets/import", { method: "POST" });
   state.site = payload.site;
   state.assetScan = payload.scan;
+  state.assetLibrary = payload.assets || state.assetLibrary;
   renderAssetScan();
+  renderAssetLibrary();
   setStatus(`已加入 ${payload.importedCount} 张新照片。\n${payload.sync.stdout}`, "ok");
   await chooseTemplatePack(state.selectedPack ? state.selectedPack.id : state.templatePacks[0] && state.templatePacks[0].id);
+}
+
+function collectAssetMetadataUpdates() {
+  return state.assetLibrary.map((asset) => {
+    const altInput = document.querySelector(`[data-asset-alt="${CSS.escape(asset.id)}"]`);
+    const tagsInput = document.querySelector(`[data-asset-tags="${CSS.escape(asset.id)}"]`);
+    return {
+      id: asset.id,
+      alt: altInput ? altInput.value : asset.alt || "",
+      tags: tagsInput ? tagsInput.value : (asset.tags || []).join("，")
+    };
+  });
+}
+
+async function saveAssetMetadata() {
+  const payload = await requestJson("/api/assets/metadata", {
+    method: "POST",
+    body: JSON.stringify({ updates: collectAssetMetadataUpdates() })
+  });
+  state.site = payload.site;
+  state.assetLibrary = payload.assets || [];
+  renderAssetLibrary();
+  setStatus(`素材信息已保存。\n${payload.sync.stdout}`, "ok");
 }
 
 async function validateCurrentDraft() {
@@ -738,6 +804,7 @@ els.draftEditor.addEventListener("change", () => {
 els.reloadBtn.addEventListener("click", () => loadSite().catch((error) => setStatus(error.message, "bad")));
 els.scanAssetsBtn.addEventListener("click", () => scanAssets().catch((error) => setStatus(error.message, "bad")));
 els.importAssetsBtn.addEventListener("click", () => importAssets().catch((error) => setStatus(error.message, "bad")));
+els.saveAssetMetadataBtn.addEventListener("click", () => saveAssetMetadata().catch((error) => setStatus(error.message, "bad")));
 els.validateBtn.addEventListener("click", () => validateCurrentDraft().catch((error) => setStatus(error.message, "bad")));
 els.compileBtn.addEventListener("click", () => compileDraft().catch((error) => setStatus(error.message, "bad")));
 els.prevStepBtn.addEventListener("click", () => moveStep(-1));

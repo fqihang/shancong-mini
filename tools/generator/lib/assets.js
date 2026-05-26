@@ -148,7 +148,87 @@ function mergeScannedAssets(site, scannedAssets) {
   return next;
 }
 
+function pushUsage(usageMap, assetId, label) {
+  if (!assetId) {
+    return;
+  }
+  if (!usageMap.has(assetId)) {
+    usageMap.set(assetId, []);
+  }
+  usageMap.get(assetId).push(label);
+}
+
+function collectAssetUsage(site) {
+  const usage = new Map();
+  pushUsage(usage, site.share && site.share.image, "分享图");
+
+  const home = site.pages && site.pages.home;
+  if (home) {
+    pushUsage(usage, home.hero && home.hero.image, "首页首屏");
+    for (const section of home.sections || []) {
+      for (const [slotId, assetId] of Object.entries(section.slots || {})) {
+        pushUsage(usage, assetId, `首页区块 ${section.id} / ${slotId}`);
+      }
+    }
+  }
+
+  for (const room of (site.pages && site.pages.rooms) || []) {
+    pushUsage(usage, room.cover, `房间 ${room.id} / 封面`);
+    for (const imageId of room.images || []) {
+      pushUsage(usage, imageId, `房间 ${room.id} / 图集`);
+    }
+  }
+
+  return usage;
+}
+
+function assetSourceType(asset) {
+  return asset.src && asset.src.startsWith("/") ? "local" : "remote";
+}
+
+function buildAssetLibrary(site) {
+  const usage = collectAssetUsage(site || {});
+  return ((site && site.assets) || []).map((asset) => {
+    const assetUsage = usage.get(asset.id) || [];
+    return Object.assign({}, asset, {
+      sourceType: assetSourceType(asset),
+      used: assetUsage.length > 0,
+      usage: assetUsage
+    });
+  });
+}
+
+function normalizeTags(tags) {
+  if (Array.isArray(tags)) {
+    return tags.map((tag) => String(tag).trim()).filter(Boolean);
+  }
+  if (typeof tags === "string") {
+    return tags.split(/[，,]/).map((tag) => tag.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+function updateAssetMetadata(site, updates) {
+  const updateMap = new Map((updates || [])
+    .filter((update) => update && update.id)
+    .map((update) => [update.id, update]));
+  const next = JSON.parse(JSON.stringify(site));
+  next.assets = (next.assets || []).map((asset) => {
+    const update = updateMap.get(asset.id);
+    if (!update) {
+      return asset;
+    }
+    return Object.assign({}, asset, {
+      alt: typeof update.alt === "string" ? update.alt.trim() : asset.alt,
+      tags: update.tags === undefined ? asset.tags || [] : normalizeTags(update.tags)
+    });
+  });
+  return next;
+}
+
 module.exports = {
+  buildAssetLibrary,
   mergeScannedAssets,
-  scanPhotoLibrary
+  scanPhotoLibrary,
+  updateAssetMetadata
 };

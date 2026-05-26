@@ -3,8 +3,10 @@ const http = require("http");
 const path = require("path");
 const { spawn } = require("child_process");
 const {
+  buildAssetLibrary,
   mergeScannedAssets,
-  scanPhotoLibrary
+  scanPhotoLibrary,
+  updateAssetMetadata
 } = require("./lib/assets");
 const {
   validateSiteConfig
@@ -558,6 +560,12 @@ async function handleApi(req, res) {
       return;
     }
 
+    if (req.method === "GET" && requestUrl.pathname === "/api/assets/library") {
+      const site = readSite();
+      sendJson(res, 200, { assets: buildAssetLibrary(site) });
+      return;
+    }
+
     if (req.method === "POST" && requestUrl.pathname === "/api/assets/import") {
       const site = readSite();
       const scan = scanPhotoLibrary(repoRoot, site);
@@ -573,6 +581,27 @@ async function handleApi(req, res) {
         site: nextSite,
         importedCount: scan.newAssets.length,
         scan: scanPhotoLibrary(repoRoot, nextSite),
+        assets: buildAssetLibrary(nextSite),
+        validation,
+        sync
+      });
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/assets/metadata") {
+      const body = await readBody(req);
+      const site = readSite();
+      const nextSite = updateAssetMetadata(site, body.updates || []);
+      const validation = validate(nextSite);
+      if (!validation.valid) {
+        sendJson(res, 400, { site: nextSite, validation });
+        return;
+      }
+      writeSite(nextSite);
+      const sync = await runNodeScript(path.join(repoRoot, "scripts/sync-site-config.js"));
+      sendJson(res, 200, {
+        site: nextSite,
+        assets: buildAssetLibrary(nextSite),
         validation,
         sync
       });

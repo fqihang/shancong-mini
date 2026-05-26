@@ -3,8 +3,10 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const {
+  buildAssetLibrary,
   mergeScannedAssets,
-  scanPhotoLibrary
+  scanPhotoLibrary,
+  updateAssetMetadata
 } = require("../lib/assets");
 
 function test(name, fn) {
@@ -30,6 +32,9 @@ function makeRepo(files) {
 
 function baseSite() {
   return {
+    share: {
+      image: "remote_stream"
+    },
     assets: [
       {
         id: "existing_room",
@@ -47,7 +52,29 @@ function baseSite() {
         alt: "Remote stream",
         tags: ["溪流"]
       }
-    ]
+    ],
+    pages: {
+      home: {
+        hero: { image: "remote_stream" },
+        sections: [
+          {
+            id: "stream",
+            slots: { cover: "remote_stream" }
+          },
+          {
+            id: "room",
+            slots: { cover: "existing_room" }
+          }
+        ]
+      },
+      rooms: [
+        {
+          id: "guest_room",
+          cover: "existing_room",
+          images: ["remote_stream"]
+        }
+      ]
+    }
   };
 }
 
@@ -103,4 +130,31 @@ test("mergeScannedAssets appends new assets without duplicating existing ids", (
   assert.strictEqual(next.assets.length, 3);
   assert.strictEqual(next.assets.find((asset) => asset.id === "existing_room").alt, "Existing room");
   assert(next.assets.some((asset) => asset.id === "new_room_angle"));
+});
+
+test("buildAssetLibrary reports where each asset is used", () => {
+  const library = buildAssetLibrary(baseSite());
+  const byId = Object.fromEntries(library.map((asset) => [asset.id, asset]));
+
+  assert.strictEqual(byId.remote_stream.used, true);
+  assert(byId.remote_stream.usage.includes("分享图"));
+  assert(byId.remote_stream.usage.includes("首页首屏"));
+  assert(byId.remote_stream.usage.includes("首页区块 stream / cover"));
+  assert(byId.remote_stream.usage.includes("房间 guest_room / 图集"));
+  assert.strictEqual(byId.existing_room.used, true);
+  assert(byId.existing_room.usage.includes("房间 guest_room / 封面"));
+});
+
+test("updateAssetMetadata changes only alt and tags", () => {
+  const next = updateAssetMetadata(baseSite(), [
+    { id: "remote_stream", alt: "天然溪流", tags: "溪流，避暑, 安静" },
+    { id: "missing", alt: "ignored", tags: ["x"] }
+  ]);
+  const asset = next.assets.find((item) => item.id === "remote_stream");
+
+  assert.strictEqual(asset.alt, "天然溪流");
+  assert.deepStrictEqual(asset.tags, ["溪流", "避暑", "安静"]);
+  assert.strictEqual(asset.src, "https://example.com/stream.jpg");
+  assert.strictEqual(asset.orientation, "landscape");
+  assert.strictEqual(next.assets.length, baseSite().assets.length);
 });
