@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "templatePacks": [
+    {
+      "id": "shancong-quiet-gallery",
+      "name": "山从安静画廊",
+      "summary": "用深山、溪流、漂亮房间和咖啡组成低销售感首页。",
+      "styleKeywords": ["安静", "深山", "留白", "画廊感"],
+      "hero": {
+        "imageSlot": "hero",
+        "kicker": "山从｜恩施鹤峰深山民宿",
+        "title": "住进深山溪流旁的安静夏天",
+        "text": "天然溪流、避暑山风、漂亮房间和一杯认真做的咖啡。",
+        "points": ["深山", "安静", "天然溪流", "避暑", "漂亮房间", "咖啡"]
+      },
+      "sections": [
+        {
+          "id": "deep_mountain",
+          "template": "feature_landscape",
+          "slots": {
+            "cover": { "orientation": "landscape", "recommendedTags": ["深山", "安静"] }
+          },
+          "copy": {
+            "eyebrow": "远离城市噪音",
+            "title": "深山",
+            "text": "山从在恩施鹤峰县的山里，白天听风，夜里听溪流和虫鸣。"
+          }
+        },
+        {
+          "id": "natural_stream",
+          "template": "feature_landscape",
+          "slots": {
+            "cover": { "orientation": "landscape", "recommendedTags": ["溪流", "避暑"] }
+          },
+          "copy": {
+            "eyebrow": "夏天的清凉来自山谷",
+            "title": "天然溪流",
+            "text": "溪水从民宿旁经过，适合散步、放空，也让夏季停留更舒服。"
+          }
+        },
+        {
+          "id": "beautiful_rooms",
+          "template": "portrait_pair",
+          "slots": {
+            "left": { "orientation": "portrait", "recommendedTags": ["房间", "拍照"] },
+            "right": { "orientation": "portrait", "recommendedTags": ["房间", "细节"] }
+          },
+          "copy": {
+            "eyebrow": "住下来也想拍照",
+            "title": "漂亮房间",
+            "text": "自然材质、柔和光线和干净留白，把睡眠和审美放在一起。"
+          }
+        },
+        {
+          "id": "mountain_coffee",
+          "template": "mixed_mosaic",
+          "slots": {
+            "wide": { "orientation": "landscape", "recommendedTags": ["咖啡", "公共区"] },
+            "tall": { "orientation": "portrait", "recommendedTags": ["咖啡", "特写"] }
+          },
+          "copy": {
+            "eyebrow": "早晨从一杯咖啡开始",
+            "title": "山野咖啡",
+            "text": "在山雾还没散的时候，喝一杯认真做的咖啡，再慢慢开始一天。"
+          }
+        }
+      ],
+      "workflow": [
+        { "id": "basic", "title": "基础信息", "fields": ["site.brandName", "site.locationText", "site.address"] },
+        { "id": "hero", "title": "首屏", "fields": ["hero.image", "hero.title", "hero.text", "hero.points"] },
+        { "id": "sections", "title": "图片区块", "fields": ["sections"] },
+        { "id": "contact", "title": "联系方式", "fields": ["contact.phone", "contact.wechatId", "links"] }
+      ]
+    }
+  ]
+}

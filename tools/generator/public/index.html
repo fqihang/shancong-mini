@@ -14,87 +14,74 @@
       </div>
       <div class="actions">
         <button id="reloadBtn" type="button">重新读取</button>
-        <button id="validateBtn" type="button">校验</button>
-        <button id="saveBtn" type="button" class="primary">保存并同步</button>
+        <button id="validateBtn" type="button">校验当前产物</button>
+        <button id="compileBtn" type="button" class="primary">Preview OK，生成编译产物</button>
       </div>
     </header>
 
     <main class="workspace">
-      <section class="panel editor-panel">
+      <section class="panel demo-panel">
         <div class="panel-head">
           <div>
-            <h2>内容编辑</h2>
-            <p>快捷字段会同步到下方 JSON，保存前会复用小程序同一套校验规则。</p>
+            <h2>1. AI 生成 Demo</h2>
+            <p>用网页、案例文档和照片 metadata 生成模版方案，聊天修正后保存为 templatePack。</p>
+          </div>
+          <span id="keyBadge" class="badge neutral">检查中</span>
+        </div>
+
+        <label>
+          <span>参考网页 URL</span>
+          <input id="referenceUrlInput" type="url" placeholder="https://..." />
+        </label>
+        <label>
+          <span>案例文档 / 风格要求</span>
+          <textarea id="referenceDocInput" class="doc-input" placeholder="粘贴案例说明、网站文案、你喜欢/不喜欢的风格..."></textarea>
+        </label>
+        <label>
+          <span>Chat</span>
+          <textarea id="chatInput" class="chat-input" placeholder="例如：参考这个网页，结合现有照片，给我 3 个适合山从的安静画廊 demo。"></textarea>
+        </label>
+        <button id="sendDemoBtn" type="button" class="primary wide">生成 / 继续修正 Demo</button>
+
+        <div id="proposalBox" class="proposal-box empty">
+          等待生成。AI 只生成 templatePack proposal，不直接覆盖小程序产物。
+        </div>
+        <div class="proposal-actions">
+          <button id="saveProposalBtn" type="button" disabled>确认保存为模版</button>
+          <button id="discardProposalBtn" type="button" disabled>丢弃</button>
+        </div>
+      </section>
+
+      <section class="panel workflow-panel">
+        <div class="panel-head">
+          <div>
+            <h2>2. 店家配置 Workflow</h2>
+            <p>选择模版后，系统按模版生成步骤，引导配置图片、文字、联系信息和链接。</p>
           </div>
           <span id="validationBadge" class="badge neutral">未校验</span>
         </div>
 
-        <div class="form-grid">
-          <label>
-            <span>民宿名称</span>
-            <input id="brandNameInput" type="text" />
-          </label>
-          <label>
-            <span>位置</span>
-            <input id="locationInput" type="text" />
-          </label>
-          <label>
-            <span>分享标题</span>
-            <input id="shareTitleInput" type="text" />
-          </label>
-          <label>
-            <span>电话</span>
-            <input id="phoneInput" type="text" />
-          </label>
-          <label>
-            <span>微信号</span>
-            <input id="wechatInput" type="text" />
-          </label>
-          <label>
-            <span>地址</span>
-            <input id="addressInput" type="text" />
-          </label>
-        </div>
-
-        <label class="json-label" for="jsonEditor">content/site.json</label>
-        <textarea id="jsonEditor" spellcheck="false"></textarea>
-
+        <label>
+          <span>选择模版</span>
+          <select id="templatePackSelect"></select>
+        </label>
+        <div id="workflowSteps" class="step-list"></div>
+        <div id="workflowForm" class="workflow-form"></div>
+        <details class="json-details">
+          <summary>高级：查看当前 draft JSON</summary>
+          <textarea id="draftEditor" spellcheck="false"></textarea>
+        </details>
         <div id="statusBox" class="status-box"></div>
       </section>
 
       <section class="panel preview-panel">
         <div class="panel-head">
           <div>
-            <h2>页面预览</h2>
-            <p>按当前 JSON 近似预览首页画廊、素材和联系信息。</p>
+            <h2>3. Preview / 编译产物</h2>
+            <p>Preview 满意后生成最终 `content/site.json` 和小程序运行时 `utils/content-data.js`。</p>
           </div>
         </div>
         <div id="previewRoot" class="preview-root"></div>
-      </section>
-
-      <section class="panel chat-panel">
-        <div class="panel-head">
-          <div>
-            <h2>AI Chat</h2>
-            <p>调用本地 DeepSeek 配置生成 JSON proposal，应用后仍需校验和保存。</p>
-          </div>
-          <span id="keyBadge" class="badge neutral">检查中</span>
-        </div>
-
-        <textarea
-          id="chatInput"
-          class="chat-input"
-          placeholder="例如：把首页改得更像安静画廊，用现有图片重排 4 个 sections，文案更少一点。"
-        ></textarea>
-        <button id="sendChatBtn" type="button" class="primary wide">生成 proposal</button>
-
-        <div id="proposalBox" class="proposal-box empty">
-          等待生成。DeepSeek 只会返回 proposal，不会直接覆盖文件。
-        </div>
-        <div class="proposal-actions">
-          <button id="applyProposalBtn" type="button" disabled>应用到编辑器</button>
-          <button id="discardProposalBtn" type="button" disabled>丢弃</button>
-        </div>
       </section>
     </main>
 

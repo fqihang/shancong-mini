@@ -5,10 +5,17 @@ const { spawn } = require("child_process");
 const {
   validateSiteConfig
 } = require("../../scripts/lib/site-validator");
+const {
+  applyTemplatePackProposal,
+  buildWorkflowSteps,
+  draftToSite,
+  templatePackToDraft
+} = require("./lib/workflow");
 
 const repoRoot = path.resolve(__dirname, "../..");
 const publicRoot = path.join(__dirname, "public");
 const sitePath = path.join(repoRoot, "content/site.json");
+const templatePacksPath = path.join(repoRoot, "content/template-packs.json");
 const defaultPort = Number(process.env.PORT || process.env.GENERATOR_PORT || 57592);
 
 function readJsonFile(filePath) {
@@ -21,6 +28,17 @@ function readSite() {
 
 function writeSite(site) {
   fs.writeFileSync(sitePath, `${JSON.stringify(site, null, 2)}\n`);
+}
+
+function readTemplatePacks() {
+  if (!fs.existsSync(templatePacksPath)) {
+    return { version: 1, templatePacks: [] };
+  }
+  return readJsonFile(templatePacksPath);
+}
+
+function writeTemplatePacks(payload) {
+  fs.writeFileSync(templatePacksPath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
 function sendJson(res, statusCode, payload) {
@@ -114,7 +132,22 @@ function getDeepSeekKey() {
   return "";
 }
 
-function buildAiPrompt(site) {
+async function readReferenceUrl(url) {
+  if (!url) {
+    return "";
+  }
+  const response = await fetch(url);
+  const html = await response.text();
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 8000);
+}
+
+function buildContentProposalPrompt(site) {
   return [
     "你是山从民宿本地内容生成器里的内容与页面编排助手。",
     "你只能输出 JSON proposal，不能输出 Markdown、解释文字、WXML、WXSS、JS 或 API key。",
@@ -154,6 +187,68 @@ function buildAiPrompt(site) {
       alt: asset.alt,
       tags: asset.tags || []
     })), null, 2)
+  ].join("\n\n");
+}
+
+function buildTemplatePackPrompt(site, references) {
+  return [
+    "你是山从民宿本地内容生成器里的页面方案设计师。",
+    "你要分析用户给的网页、案例文档、素材清单和聊天要求，生成可保存的 templatePack demo。",
+    "只能输出 JSON，不能输出 Markdown、解释文字、WXML、WXSS、JS 或 API key。",
+    "DeepSeek 当前在本工具里只按文本和素材 metadata 工作，不要假装看到了图片真实内容；只能依据图片 id、orientation、alt、tags 推荐。",
+    "视觉原则：安静画廊感、大图、少字、留白、低销售感；不要下单导向。",
+    "输出格式必须是：",
+    JSON.stringify({
+      type: "template_pack_proposal",
+      summary: "一句话说明这批 demo",
+      templatePacks: [
+        {
+          id: "lowercase-kebab-id",
+          name: "模版名",
+          summary: "模版用途",
+          styleKeywords: ["安静", "画廊感"],
+          hero: {
+            imageSlot: "hero",
+            kicker: "山从｜恩施鹤峰深山民宿",
+            title: "首屏标题",
+            text: "首屏短文案",
+            points: ["深山", "溪流"]
+          },
+          sections: [
+            {
+              id: "section_id",
+              template: "feature_landscape",
+              slots: {
+                cover: { orientation: "landscape", recommendedTags: ["深山"] }
+              },
+              copy: {
+                eyebrow: "不超过 16 字",
+                title: "不超过 18 字",
+                text: "不超过 54 字"
+              }
+            }
+          ],
+          workflow: [
+            { id: "basic", title: "基础信息", fields: ["site.brandName", "site.locationText", "site.address"] },
+            { id: "hero", title: "首屏", fields: ["hero.image", "hero.title", "hero.text", "hero.points"] },
+            { id: "sections", title: "图片区块", fields: ["sections"] },
+            { id: "contact", title: "联系方式", fields: ["contact.phone", "contact.wechatId", "links"] }
+          ]
+        }
+      ],
+      warnings: []
+    }, null, 2),
+    "当前可用小程序 renderer templates：",
+    JSON.stringify(site.templates, null, 2),
+    "当前素材 metadata：",
+    JSON.stringify(site.assets.map((asset) => ({
+      id: asset.id,
+      orientation: asset.orientation,
+      alt: asset.alt,
+      tags: asset.tags || []
+    })), null, 2),
+    "参考材料：",
+    JSON.stringify(references || {}, null, 2)
   ].join("\n\n");
 }
 
@@ -230,11 +325,11 @@ async function callDeepSeek(message, site) {
   }
 
   const payload = {
-    model: process.env.DEEPSEEK_MODEL || "deepseek-chat",
+    model: process.env.DEEPSEEK_MODEL || "deepseek-v4-flash",
     response_format: { type: "json_object" },
     temperature: 0.7,
     messages: [
-      { role: "system", content: buildAiPrompt(site) },
+      { role: "system", content: buildContentProposalPrompt(site) },
       {
         role: "user",
         content: JSON.stringify({
@@ -285,6 +380,71 @@ async function callDeepSeek(message, site) {
   };
 }
 
+async function callDeepSeekTemplatePack(message, site, references) {
+  const apiKey = getDeepSeekKey();
+  if (!apiKey) {
+    const error = new Error("Missing DeepSeek API key. Set DEEPSEEK_API_KEY or create a local .deepseek-key file.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const referenceUrlText = references && references.url
+    ? await readReferenceUrl(references.url)
+    : "";
+
+  const payload = {
+    model: process.env.DEEPSEEK_MODEL || "deepseek-v4-flash",
+    response_format: { type: "json_object" },
+    temperature: 0.75,
+    messages: [
+      {
+        role: "system",
+        content: buildTemplatePackPrompt(site, Object.assign({}, references, { urlText: referenceUrlText }))
+      },
+      {
+        role: "user",
+        content: JSON.stringify({
+          request: message,
+          currentSiteSummary: {
+            site: site.site,
+            home: site.pages.home,
+            contact: site.pages.contact
+          }
+        })
+      }
+    ]
+  };
+
+  const response = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const text = await response.text();
+  const data = JSON.parse(text);
+  if (!response.ok) {
+    throw new Error(data.error && data.error.message ? data.error.message : text);
+  }
+
+  const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+  if (!content) {
+    throw new Error("DeepSeek response did not include message content");
+  }
+
+  let proposal;
+  try {
+    proposal = JSON.parse(stripJsonFence(content));
+  } catch (error) {
+    throw new Error(`DeepSeek template proposal is not valid JSON: ${error.message}`);
+  }
+
+  return { proposal };
+}
+
 function contentTypeFor(filePath) {
   if (filePath.endsWith(".html")) return "text/html; charset=utf-8";
   if (filePath.endsWith(".css")) return "text/css; charset=utf-8";
@@ -332,8 +492,10 @@ async function handleApi(req, res) {
   try {
     if (req.method === "GET" && requestUrl.pathname === "/api/site") {
       const site = readSite();
+      const templatePackPayload = readTemplatePacks();
       sendJson(res, 200, {
         site,
+        templatePacks: templatePackPayload.templatePacks,
         validation: validate(site),
         deepSeekConfigured: Boolean(getDeepSeekKey())
       });
@@ -364,6 +526,64 @@ async function handleApi(req, res) {
     if (req.method === "POST" && requestUrl.pathname === "/api/sync") {
       const sync = await runNodeScript(path.join(repoRoot, "scripts/sync-site-config.js"));
       sendJson(res, 200, { sync });
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/template-packs") {
+      sendJson(res, 200, readTemplatePacks());
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/template-pack-proposal") {
+      const body = await readBody(req);
+      const site = body.site || readSite();
+      const result = await callDeepSeekTemplatePack(body.message || "", site, body.references || {});
+      sendJson(res, 200, result);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/template-packs/save-proposal") {
+      const body = await readBody(req);
+      const current = readTemplatePacks();
+      const templatePacks = applyTemplatePackProposal(current.templatePacks, body.proposal);
+      const next = { version: 1, templatePacks };
+      writeTemplatePacks(next);
+      sendJson(res, 200, next);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/workflow/draft") {
+      const body = await readBody(req);
+      const site = body.site || readSite();
+      const pack = body.templatePack;
+      if (!pack || !pack.id) {
+        sendJson(res, 400, { error: "templatePack is required" });
+        return;
+      }
+      sendJson(res, 200, {
+        steps: buildWorkflowSteps(pack),
+        draft: templatePackToDraft(pack, site)
+      });
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/workflow/compile") {
+      const body = await readBody(req);
+      const site = body.site || readSite();
+      const draft = body.draft;
+      if (!draft || !draft.templatePackId) {
+        sendJson(res, 400, { error: "draft is required" });
+        return;
+      }
+      const nextSite = draftToSite(draft, site);
+      const validation = validate(nextSite);
+      if (!validation.valid) {
+        sendJson(res, 400, { site: nextSite, validation });
+        return;
+      }
+      writeSite(nextSite);
+      const sync = await runNodeScript(path.join(repoRoot, "scripts/sync-site-config.js"));
+      sendJson(res, 200, { site: nextSite, validation, sync });
       return;
     }
 

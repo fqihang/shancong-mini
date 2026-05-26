@@ -1,6 +1,7 @@
 {
   "scripts": {
     "generator": "node tools/generator/server.js",
+    "test": "node tools/generator/test/workflow.test.js",
     "site:validate": "node scripts/validate-site-config.js",
     "site:sync": "node scripts/sync-site-config.js"
   }

@@ -51,7 +51,7 @@ node scripts/sync-site-config.js
 
 ### 本地内容生成器
 
-本地生成器用于编辑、预览和保存 `content/site.json`，也可以调用 DeepSeek 生成 JSON proposal。
+本地生成器用于生成 Demo 模版、引导店家配置内容、预览并生成小程序静态产物。
 
 启动：
 
@@ -66,7 +66,16 @@ DeepSeek API key 只放本地，不提交仓库。任选一种方式：
 - 启动前设置环境变量 `DEEPSEEK_API_KEY`。
 - 在仓库根目录创建 `.deepseek-key`，只写 key 本身。该文件已加入 `.gitignore`。
 
-Chat 只生成 proposal。点击“应用到编辑器”后仍需校验，再点击“保存并同步”才会写入 `content/site.json` 和 `utils/content-data.js`。
+默认模型是 `deepseek-v4-flash`。如需切换，可以在启动前设置 `DEEPSEEK_MODEL`。
+
+工作流：
+
+1. **AI 生成 Demo**：输入参考网页、案例文档和聊天要求，DeepSeek 会结合照片 metadata 生成 `templatePack` proposal。
+2. **保存模版**：确认后写入 `content/template-packs.json`。
+3. **店家配置 Workflow**：选择模版后，生成器按步骤引导配置基础信息、首屏、图片区块、联系方式和链接。
+4. **Preview / 编译产物**：Preview OK 后，生成最终 `content/site.json`，并同步为 `utils/content-data.js`。
+
+Chat 只生成 proposal。AI 不直接覆盖小程序页面代码，也不自动发布小程序。
 
 ## 产品边界
 

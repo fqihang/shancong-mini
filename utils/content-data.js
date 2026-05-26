@@ -268,7 +268,7 @@ module.exports = {
           "enabled": true,
           "template": "feature_landscape",
           "slots": {
-            "cover": "scene_deep_mountain"
+            "cover": "hero_mountain_house"
           },
           "copy": {
             "eyebrow": "远离城市噪音",
@@ -295,7 +295,7 @@ module.exports = {
           "template": "portrait_pair",
           "slots": {
             "left": "room_window_portrait",
-            "right": "room_linen_portrait"
+            "right": "room_window_portrait"
           },
           "copy": {
             "eyebrow": "住下来也想拍照",
