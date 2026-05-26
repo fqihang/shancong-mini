@@ -4,6 +4,8 @@ const state = {
   selectedPack: null,
   draft: null,
   steps: [],
+  progress: [],
+  assetChoices: { hero: [], sections: {} },
   currentStepId: "basic",
   lastProposal: null
 };
@@ -18,6 +20,8 @@ const els = {
   templatePackSelect: document.querySelector("#templatePackSelect"),
   workflowSteps: document.querySelector("#workflowSteps"),
   workflowForm: document.querySelector("#workflowForm"),
+  prevStepBtn: document.querySelector("#prevStepBtn"),
+  nextStepBtn: document.querySelector("#nextStepBtn"),
   draftEditor: document.querySelector("#draftEditor"),
   previewRoot: document.querySelector("#previewRoot"),
   referenceUrlInput: document.querySelector("#referenceUrlInput"),
@@ -54,7 +58,10 @@ async function requestJson(url, options = {}) {
   }, options));
   const payload = await response.json();
   if (!response.ok) {
-    throw new Error(payload.error || formatValidation(payload.validation) || "Request failed");
+    const draftErrors = payload.draftValidation && payload.draftValidation.errors
+      ? payload.draftValidation.errors.join("\n")
+      : "";
+    throw new Error(payload.error || draftErrors || formatValidation(payload.validation) || "Request failed");
   }
   return payload;
 }
@@ -95,6 +102,113 @@ function slotRequirements(section) {
   return Object.fromEntries((template && template.slots || []).map((slot) => [slot.id, slot]));
 }
 
+function textValue(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function missing(value, message) {
+  return textValue(value) ? [] : [message];
+}
+
+function sectionIssues(section) {
+  if (section.enabled === false) {
+    return [];
+  }
+  const label = textValue(section.id) || "未命名区块";
+  const issues = [];
+  for (const [slotId, assetId] of Object.entries(section.slots || {})) {
+    if (!textValue(assetId)) {
+      issues.push(`${label}: 缺少图片 ${slotId}`);
+    }
+  }
+  if (!textValue(section.copy && section.copy.title)) {
+    issues.push(`${label}: 缺少标题`);
+  }
+  if (!textValue(section.copy && section.copy.text)) {
+    issues.push(`${label}: 缺少短文案`);
+  }
+  return issues;
+}
+
+function validateDraftBeforeCompileClient(draft) {
+  if (!draft) {
+    return { valid: false, errors: ["请先选择模版生成 draft"] };
+  }
+  const contact = draft.contact || {};
+  const errors = [
+    ...missing(draft.site && draft.site.brandName, "缺少民宿名称"),
+    ...missing(draft.site && draft.site.locationText, "缺少位置"),
+    ...missing(draft.share && draft.share.title, "缺少分享标题"),
+    ...missing(draft.hero && draft.hero.image, "缺少首屏图片"),
+    ...missing(draft.hero && draft.hero.title, "缺少首屏标题"),
+    ...missing(draft.hero && draft.hero.text, "缺少首屏短文案")
+  ];
+
+  const sections = draft.sections || [];
+  if (!sections.length) {
+    errors.push("至少需要一个首页图片区块");
+  } else {
+    errors.push(...sections.flatMap(sectionIssues));
+  }
+
+  if (!textValue(contact.phone) && !textValue(contact.wechatId)) {
+    errors.push("电话或微信至少填写一个");
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+function stepIssues(stepId) {
+  if (!state.draft) {
+    return ["请先选择模版生成 draft"];
+  }
+  if (stepId === "basic") {
+    return [
+      ...missing(state.draft.site && state.draft.site.brandName, "缺少民宿名称"),
+      ...missing(state.draft.site && state.draft.site.locationText, "缺少位置"),
+      ...missing(state.draft.share && state.draft.share.title, "缺少分享标题")
+    ];
+  }
+  if (stepId === "hero") {
+    return [
+      ...missing(state.draft.hero && state.draft.hero.image, "缺少首屏图片"),
+      ...missing(state.draft.hero && state.draft.hero.title, "缺少首屏标题"),
+      ...missing(state.draft.hero && state.draft.hero.text, "缺少首屏短文案")
+    ];
+  }
+  if (stepId === "sections") {
+    const sections = state.draft.sections || [];
+    return sections.length ? sections.flatMap(sectionIssues) : ["至少需要一个首页图片区块"];
+  }
+  if (stepId === "contact") {
+    const contact = state.draft.contact || {};
+    return textValue(contact.phone) || textValue(contact.wechatId)
+      ? []
+      : ["电话或微信至少填写一个"];
+  }
+  if (stepId === "preview") {
+    return validateDraftBeforeCompileClient(state.draft).errors;
+  }
+  return [];
+}
+
+function refreshProgress() {
+  state.progress = (state.steps || []).map((step) => {
+    const issues = stepIssues(step.id);
+    return {
+      id: step.id,
+      title: step.title,
+      complete: issues.length === 0,
+      issueCount: issues.length,
+      issues
+    };
+  });
+}
+
+function progressById() {
+  return Object.fromEntries((state.progress || []).map((step) => [step.id, step]));
+}
+
 function selectedDraftSiteShape() {
   if (!state.draft) {
     return state.site;
@@ -116,6 +230,7 @@ function syncDraftEditor() {
 
 function setDraft(draft) {
   state.draft = draft;
+  refreshProgress();
   syncDraftEditor();
   renderWorkflow();
   renderPreview(selectedDraftSiteShape());
@@ -131,12 +246,16 @@ function renderTemplateSelect() {
 }
 
 function renderSteps() {
+  const progress = progressById();
   els.workflowSteps.innerHTML = state.steps.map((step) => `
     <button
       type="button"
-      class="step-chip ${step.id === state.currentStepId ? "active" : ""}"
+      class="step-chip ${step.id === state.currentStepId ? "active" : ""} ${progress[step.id] && progress[step.id].complete ? "complete" : "incomplete"}"
       data-step="${escapeHtml(step.id)}"
-    >${escapeHtml(step.title)}</button>
+    >
+      <span>${escapeHtml(step.title)}</span>
+      <small>${progress[step.id] && progress[step.id].complete ? "OK" : `${progress[step.id] ? progress[step.id].issueCount : 0} 项`}</small>
+    </button>
   `).join("");
 }
 
@@ -158,17 +277,41 @@ function textareaRow(id, label, value) {
   `;
 }
 
-function assetSelect(id, label, selectedId, orientation) {
-  const options = assetsByOrientation(orientation).map((asset) => `
+function assetSelect(id, label, selectedId, orientation, choices) {
+  const normalizedChoices = (choices && choices.length ? choices : assetsByOrientation(orientation).map((asset) => ({
+    id: asset.id,
+    src: asset.src,
+    alt: asset.alt,
+    orientation: asset.orientation,
+    tags: asset.tags || [],
+    recommended: false
+  })));
+  const options = normalizedChoices.map((asset) => `
     <option value="${escapeHtml(asset.id)}" ${asset.id === selectedId ? "selected" : ""}>
       ${escapeHtml(asset.id)} · ${escapeHtml(asset.alt || asset.orientation)}
     </option>
   `).join("");
+  const cards = normalizedChoices.map((asset) => `
+    <button
+      type="button"
+      class="asset-card ${asset.id === selectedId ? "selected" : ""} ${asset.recommended ? "recommended" : ""}"
+      data-select-target="${escapeHtml(id)}"
+      data-asset-id="${escapeHtml(asset.id)}"
+    >
+      <img src="${escapeHtml(asset.src)}" alt="" />
+      <span>
+        <strong>${escapeHtml(asset.alt || asset.id)}</strong>
+        <small>${escapeHtml([asset.orientation, ...(asset.tags || [])].filter(Boolean).join(" · "))}</small>
+      </span>
+      ${asset.recommended ? "<em>推荐</em>" : ""}
+    </button>
+  `).join("");
   return `
-    <label>
+    <label class="asset-select">
       <span>${escapeHtml(label)}</span>
       <select id="${escapeHtml(id)}">${options}</select>
     </label>
+    <div class="asset-picker">${cards}</div>
   `;
 }
 
@@ -186,7 +329,7 @@ function renderBasicStep() {
 function renderHeroStep() {
   return `
     <div class="form-grid">
-      ${assetSelect("draftHeroImage", "首屏图片", state.draft.hero.image, "landscape")}
+      ${assetSelect("draftHeroImage", "首屏图片", state.draft.hero.image, "landscape", state.assetChoices.hero)}
       ${inputRow("draftHeroKicker", "身份小字", state.draft.hero.kicker)}
       ${inputRow("draftHeroTitle", "主标题", state.draft.hero.title)}
       ${inputRow("draftHeroPoints", "卖点标签（逗号分隔）", (state.draft.hero.points || []).join("，"))}
@@ -200,7 +343,10 @@ function renderSectionsStep() {
     const slots = slotRequirements(section);
     const slotControls = Object.entries(section.slots || {}).map(([slotId, assetId]) => {
       const requirement = slots[slotId] || {};
-      return assetSelect(`section_${sectionIndex}_slot_${slotId}`, `${section.id} / ${slotId}`, assetId, requirement.orientation);
+      const choices = state.assetChoices.sections && state.assetChoices.sections[section.id]
+        ? state.assetChoices.sections[section.id][slotId]
+        : null;
+      return assetSelect(`section_${sectionIndex}_slot_${slotId}`, `${section.id} / ${slotId}`, assetId, requirement.orientation, choices);
     }).join("");
     return `
       <div class="section-editor">
@@ -250,10 +396,25 @@ function renderWorkflowForm() {
   if (state.currentStepId === "preview") els.workflowForm.innerHTML = renderPreviewStep();
 }
 
+function renderWorkflowNav() {
+  const index = state.steps.findIndex((step) => step.id === state.currentStepId);
+  const current = progressById()[state.currentStepId];
+  els.prevStepBtn.disabled = index <= 0;
+  els.nextStepBtn.disabled = index < 0 || index >= state.steps.length - 1;
+  els.nextStepBtn.textContent = index >= state.steps.length - 2 ? "去预览" : "下一步";
+  if (current && current.issues.length) {
+    els.statusBox.textContent = `当前步骤待补充：\n${current.issues.map((issue) => `- ${issue}`).join("\n")}`;
+  } else if (current) {
+    els.statusBox.textContent = "当前步骤已完整，可以继续。";
+  }
+}
+
 function renderWorkflow() {
+  refreshProgress();
   renderTemplateSelect();
   renderSteps();
   renderWorkflowForm();
+  renderWorkflowNav();
 }
 
 function updateDraftFromForm() {
@@ -294,6 +455,9 @@ function updateDraftFromForm() {
     }
   }
   syncDraftEditor();
+  refreshProgress();
+  renderSteps();
+  renderWorkflowNav();
   renderPreview(selectedDraftSiteShape());
 }
 
@@ -367,6 +531,8 @@ async function chooseTemplatePack(packId) {
     body: JSON.stringify({ site: state.site, templatePack: state.selectedPack })
   });
   state.steps = payload.steps;
+  state.progress = payload.progress || [];
+  state.assetChoices = payload.assetChoices || { hero: [], sections: {} };
   state.currentStepId = state.steps[0].id;
   setDraft(payload.draft);
 }
@@ -390,6 +556,12 @@ async function validateCurrentDraft() {
 
 async function compileDraft() {
   if (!state.draft) return;
+  updateDraftFromForm();
+  const draftValidation = validateDraftBeforeCompileClient(state.draft);
+  if (!draftValidation.valid) {
+    setStatus(`编译前需要补充：\n${draftValidation.errors.map((error) => `- ${error}`).join("\n")}`, "bad");
+    return;
+  }
   const payload = await requestJson("/api/workflow/compile", {
     method: "POST",
     body: JSON.stringify({ site: state.site, draft: state.draft })
@@ -456,11 +628,30 @@ function discardProposal() {
   els.discardProposalBtn.disabled = true;
 }
 
+function moveStep(delta) {
+  updateDraftFromForm();
+  const index = state.steps.findIndex((step) => step.id === state.currentStepId);
+  const next = state.steps[index + delta];
+  if (!next) return;
+  state.currentStepId = next.id;
+  renderWorkflow();
+}
+
 els.workflowSteps.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-step]");
   if (!button) return;
   updateDraftFromForm();
   state.currentStepId = button.dataset.step;
+  renderWorkflow();
+});
+
+els.workflowForm.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-select-target]");
+  if (!button) return;
+  const select = document.querySelector(`#${CSS.escape(button.dataset.selectTarget)}`);
+  if (!select) return;
+  select.value = button.dataset.assetId;
+  updateDraftFromForm();
   renderWorkflow();
 });
 
@@ -480,6 +671,8 @@ els.draftEditor.addEventListener("change", () => {
 els.reloadBtn.addEventListener("click", () => loadSite().catch((error) => setStatus(error.message, "bad")));
 els.validateBtn.addEventListener("click", () => validateCurrentDraft().catch((error) => setStatus(error.message, "bad")));
 els.compileBtn.addEventListener("click", () => compileDraft().catch((error) => setStatus(error.message, "bad")));
+els.prevStepBtn.addEventListener("click", () => moveStep(-1));
+els.nextStepBtn.addEventListener("click", () => moveStep(1));
 els.sendDemoBtn.addEventListener("click", sendDemoChat);
 els.saveProposalBtn.addEventListener("click", () => saveProposal().catch((error) => setStatus(error.message, "bad")));
 els.discardProposalBtn.addEventListener("click", discardProposal);

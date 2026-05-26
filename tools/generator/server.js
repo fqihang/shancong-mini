@@ -6,9 +6,12 @@ const {
   validateSiteConfig
 } = require("../../scripts/lib/site-validator");
 const {
+  assetChoicesForRequirement,
   applyTemplatePackProposal,
   buildWorkflowSteps,
   draftToSite,
+  summarizeDraftProgress,
+  validateDraftBeforeCompile,
   templatePackToDraft
 } = require("./lib/workflow");
 
@@ -113,6 +116,22 @@ function runNodeScript(scriptPath) {
 
 function validate(site) {
   return validateSiteConfig(site, { repoRoot });
+}
+
+function buildAssetChoicesForPack(site, templatePack) {
+  return {
+    hero: assetChoicesForRequirement(site, {
+      orientation: "landscape",
+      recommendedTags: ["首页", "建筑", "深山"]
+    }),
+    sections: Object.fromEntries((templatePack.sections || []).map((section) => {
+      const slots = Object.fromEntries(Object.entries(section.slots || {}).map(([slotId, requirement]) => [
+        slotId,
+        assetChoicesForRequirement(site, requirement)
+      ]));
+      return [section.id, slots];
+    }))
+  };
 }
 
 function getDeepSeekKey() {
@@ -560,9 +579,13 @@ async function handleApi(req, res) {
         sendJson(res, 400, { error: "templatePack is required" });
         return;
       }
+      const steps = buildWorkflowSteps(pack);
+      const draft = templatePackToDraft(pack, site);
       sendJson(res, 200, {
-        steps: buildWorkflowSteps(pack),
-        draft: templatePackToDraft(pack, site)
+        steps,
+        draft,
+        progress: summarizeDraftProgress(draft, steps),
+        assetChoices: buildAssetChoicesForPack(site, pack)
       });
       return;
     }
@@ -573,6 +596,11 @@ async function handleApi(req, res) {
       const draft = body.draft;
       if (!draft || !draft.templatePackId) {
         sendJson(res, 400, { error: "draft is required" });
+        return;
+      }
+      const draftValidation = validateDraftBeforeCompile(draft);
+      if (!draftValidation.valid) {
+        sendJson(res, 400, { draftValidation });
         return;
       }
       const nextSite = draftToSite(draft, site);

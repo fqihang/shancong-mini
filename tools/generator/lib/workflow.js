@@ -25,6 +25,30 @@ function chooseAsset(site, requirement = {}, fallbackId) {
   return fallbackId || (assets[0] && assets[0].id) || "";
 }
 
+function assetChoicesForRequirement(site, requirement = {}) {
+  const assets = site.assets || [];
+  const choices = assets
+    .filter((asset) => !requirement.orientation || asset.orientation === requirement.orientation)
+    .map((asset, index) => ({
+      id: asset.id,
+      src: asset.src,
+      localTarget: asset.localTarget,
+      orientation: asset.orientation,
+      alt: asset.alt,
+      tags: asset.tags || [],
+      recommended: includesAnyTag(asset, requirement.recommendedTags),
+      index
+    }))
+    .sort((left, right) => {
+      if (left.recommended !== right.recommended) {
+        return left.recommended ? -1 : 1;
+      }
+      return left.index - right.index;
+    });
+
+  return choices.map(({ index, ...asset }) => asset);
+}
+
 function buildWorkflowSteps(templatePack) {
   const baseSteps = Array.isArray(templatePack.workflow) && templatePack.workflow.length
     ? templatePack.workflow
@@ -109,6 +133,96 @@ function draftToSite(draft, site) {
   return next;
 }
 
+function issueIfMissing(value, message) {
+  return normalizeText(value) ? [] : [message];
+}
+
+function sectionIssues(section) {
+  if (section.enabled === false) {
+    return [];
+  }
+  const label = normalizeText(section.id) || "未命名区块";
+  const issues = [];
+  for (const [slotId, assetId] of Object.entries(section.slots || {})) {
+    if (!normalizeText(assetId)) {
+      issues.push(`${label}: 缺少图片 ${slotId}`);
+    }
+  }
+  if (!normalizeText(section.copy && section.copy.title)) {
+    issues.push(`${label}: 缺少标题`);
+  }
+  if (!normalizeText(section.copy && section.copy.text)) {
+    issues.push(`${label}: 缺少短文案`);
+  }
+  return issues;
+}
+
+function stepIssues(draft, stepId) {
+  if (!draft) {
+    return ["请先选择模版生成 draft"];
+  }
+  if (stepId === "basic") {
+    return [
+      ...issueIfMissing(draft.site && draft.site.brandName, "缺少民宿名称"),
+      ...issueIfMissing(draft.site && draft.site.locationText, "缺少位置"),
+      ...issueIfMissing(draft.share && draft.share.title, "缺少分享标题")
+    ];
+  }
+  if (stepId === "hero") {
+    return [
+      ...issueIfMissing(draft.hero && draft.hero.image, "缺少首屏图片"),
+      ...issueIfMissing(draft.hero && draft.hero.title, "缺少首屏标题"),
+      ...issueIfMissing(draft.hero && draft.hero.text, "缺少首屏短文案")
+    ];
+  }
+  if (stepId === "sections") {
+    const sections = draft.sections || [];
+    if (!sections.length) {
+      return ["至少需要一个首页图片区块"];
+    }
+    return sections.flatMap(sectionIssues);
+  }
+  if (stepId === "contact") {
+    const contact = draft.contact || {};
+    return normalizeText(contact.phone) || normalizeText(contact.wechatId)
+      ? []
+      : ["电话或微信至少填写一个"];
+  }
+  if (stepId === "preview") {
+    return validateDraftBeforeCompile(draft).errors;
+  }
+  return [];
+}
+
+function summarizeDraftProgress(draft, steps) {
+  return (steps || []).map((step) => {
+    const issues = stepIssues(draft, step.id);
+    return {
+      id: step.id,
+      title: step.title,
+      complete: issues.length === 0,
+      issueCount: issues.length,
+      issues
+    };
+  });
+}
+
+function validateDraftBeforeCompile(draft) {
+  const steps = buildWorkflowSteps({ workflow: [
+    { id: "basic", title: "基础信息", fields: [] },
+    { id: "hero", title: "首屏", fields: [] },
+    { id: "sections", title: "图片区块", fields: [] },
+    { id: "contact", title: "联系方式", fields: [] }
+  ]});
+  const errors = steps
+    .filter((step) => step.id !== "preview")
+    .flatMap((step) => stepIssues(draft, step.id));
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
 function applyTemplatePackProposal(existingPacks, proposal) {
   const packs = Array.isArray(existingPacks) ? existingPacks.slice() : [];
   const map = new Map(packs.map((pack) => [pack.id, pack]));
@@ -121,8 +235,11 @@ function applyTemplatePackProposal(existingPacks, proposal) {
 }
 
 module.exports = {
+  assetChoicesForRequirement,
   applyTemplatePackProposal,
   buildWorkflowSteps,
   draftToSite,
+  summarizeDraftProgress,
+  validateDraftBeforeCompile,
   templatePackToDraft
 };

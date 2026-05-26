@@ -2,9 +2,12 @@ const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 const {
+  assetChoicesForRequirement,
   applyTemplatePackProposal,
   buildWorkflowSteps,
   draftToSite,
+  summarizeDraftProgress,
+  validateDraftBeforeCompile,
   templatePackToDraft
 } = require("../lib/workflow");
 
@@ -69,6 +72,47 @@ test("templatePackToDraft recommends images by slot orientation and tags", () =>
   assert.strictEqual(draft.hero.image, "hero_mountain_house");
   assert.strictEqual(draft.sections[0].slots.cover, "scene_stream");
   assert.strictEqual(draft.sections[1].slots.left, "room_window_portrait");
+});
+
+test("assetChoicesForRequirement filters by orientation and marks recommended assets", () => {
+  const choices = assetChoicesForRequirement(site, {
+    orientation: "portrait",
+    recommendedTags: ["咖啡"]
+  });
+  assert(choices.every((asset) => asset.orientation === "portrait"));
+  assert.strictEqual(choices[0].id, "coffee_pour_portrait");
+  assert.strictEqual(choices[0].recommended, true);
+  assert(choices.some((asset) => asset.id === "room_window_portrait" && asset.recommended === false));
+});
+
+test("summarizeDraftProgress reports incomplete owner workflow steps", () => {
+  const draft = templatePackToDraft(pack, site);
+  draft.hero.title = "";
+  draft.sections[0].slots.cover = "";
+  draft.contact.phone = "";
+  draft.contact.wechatId = "";
+  const summary = summarizeDraftProgress(draft, buildWorkflowSteps(pack));
+  const byId = Object.fromEntries(summary.map((step) => [step.id, step]));
+  assert.strictEqual(byId.basic.complete, true);
+  assert.strictEqual(byId.hero.complete, false);
+  assert(byId.hero.issues.some((issue) => issue.includes("首屏标题")));
+  assert.strictEqual(byId.sections.complete, false);
+  assert(byId.sections.issues.some((issue) => issue.includes("stream")));
+  assert.strictEqual(byId.contact.complete, false);
+  assert.strictEqual(byId.preview.complete, false);
+});
+
+test("validateDraftBeforeCompile blocks drafts missing core lead information", () => {
+  const draft = templatePackToDraft(pack, site);
+  draft.hero.image = "";
+  draft.sections[1].copy.text = "";
+  draft.contact.phone = "";
+  draft.contact.wechatId = "";
+  const validation = validateDraftBeforeCompile(draft);
+  assert.strictEqual(validation.valid, false);
+  assert(validation.errors.some((error) => error.includes("首屏图片")));
+  assert(validation.errors.some((error) => error.includes("room")));
+  assert(validation.errors.some((error) => error.includes("电话或微信")));
 });
 
 test("draftToSite produces a valid site-shaped home page", () => {
