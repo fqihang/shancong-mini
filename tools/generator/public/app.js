@@ -8,6 +8,7 @@ const state = {
   assetChoices: { hero: [], sections: {} },
   assetScan: null,
   assetLibrary: [],
+  flowState: null,
   currentStepId: "basic",
   lastProposal: null
 };
@@ -20,6 +21,10 @@ const els = {
   assetScanSummary: document.querySelector("#assetScanSummary"),
   assetScanList: document.querySelector("#assetScanList"),
   assetLibraryList: document.querySelector("#assetLibraryList"),
+  flowAssetCount: document.querySelector("#flowAssetCount"),
+  flowTemplateCount: document.querySelector("#flowTemplateCount"),
+  flowStepCount: document.querySelector("#flowStepCount"),
+  flowOutputText: document.querySelector("#flowOutputText"),
   validateBtn: document.querySelector("#validateBtn"),
   compileBtn: document.querySelector("#compileBtn"),
   validationBadge: document.querySelector("#validationBadge"),
@@ -215,6 +220,36 @@ function refreshProgress() {
 
 function progressById() {
   return Object.fromEntries((state.progress || []).map((step) => [step.id, step]));
+}
+
+function refreshFlowState() {
+  const home = state.site && state.site.pages && state.site.pages.home ? state.site.pages.home : {};
+  state.flowState = {
+    source: {
+      assetCount: state.site && state.site.assets ? state.site.assets.length : 0,
+      templatePackCount: state.templatePacks.length,
+      sectionCount: (home.sections || []).length
+    },
+    workflow: {
+      stepCount: state.steps.length
+    },
+    output: {
+      artifacts: ["content/site.json", "utils/content-data.js"]
+    }
+  };
+}
+
+function renderFlowOverview() {
+  if (!state.flowState) {
+    return;
+  }
+  const source = state.flowState.source || {};
+  const workflow = state.flowState.workflow || {};
+  const output = state.flowState.output || {};
+  els.flowAssetCount.textContent = `素材 ${source.assetCount || 0}`;
+  els.flowTemplateCount.textContent = `模版 ${source.templatePackCount || 0}`;
+  els.flowStepCount.textContent = `步骤 ${workflow.stepCount || 0}`;
+  els.flowOutputText.textContent = (output.artifacts || []).join(" + ");
 }
 
 function selectedDraftSiteShape() {
@@ -620,6 +655,8 @@ async function chooseTemplatePack(packId) {
   state.progress = payload.progress || [];
   state.assetChoices = payload.assetChoices || { hero: [], sections: {} };
   state.currentStepId = state.steps[0].id;
+  refreshFlowState();
+  renderFlowOverview();
   setDraft(payload.draft);
 }
 
@@ -627,8 +664,10 @@ async function loadSite() {
   const payload = await requestJson("/api/site");
   state.site = payload.site;
   state.templatePacks = payload.templatePacks || [];
+  state.flowState = payload.flowState;
   setKeyBadge(payload.deepSeekConfigured);
   setStatus(formatValidation(payload.validation), payload.validation.valid ? "ok" : "bad");
+  renderFlowOverview();
   await loadAssetLibrary();
   await chooseTemplatePack(state.templatePacks[0] && state.templatePacks[0].id);
 }
@@ -650,6 +689,8 @@ async function importAssets() {
   state.site = payload.site;
   state.assetScan = payload.scan;
   state.assetLibrary = payload.assets || state.assetLibrary;
+  refreshFlowState();
+  renderFlowOverview();
   renderAssetScan();
   renderAssetLibrary();
   setStatus(`已加入 ${payload.importedCount} 张新照片。\n${payload.sync.stdout}`, "ok");
@@ -675,6 +716,8 @@ async function saveAssetMetadata() {
   });
   state.site = payload.site;
   state.assetLibrary = payload.assets || [];
+  refreshFlowState();
+  renderFlowOverview();
   renderAssetLibrary();
   setStatus(`素材信息已保存。\n${payload.sync.stdout}`, "ok");
 }
@@ -700,6 +743,8 @@ async function compileDraft() {
     body: JSON.stringify({ site: state.site, draft: state.draft })
   });
   state.site = payload.site;
+  refreshFlowState();
+  renderFlowOverview();
   setStatus(`${formatValidation(payload.validation)}\n${payload.sync.stdout}`, "ok");
   renderPreview(payload.site);
 }

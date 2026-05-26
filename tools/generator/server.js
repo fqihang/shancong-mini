@@ -9,6 +9,9 @@ const {
   updateAssetMetadata
 } = require("./lib/assets");
 const {
+  buildGeneratorFlowState
+} = require("./lib/flow");
+const {
   validateSiteConfig
 } = require("../../scripts/lib/site-validator");
 const {
@@ -522,7 +525,12 @@ async function handleApi(req, res) {
         site,
         templatePacks: templatePackPayload.templatePacks,
         validation: validate(site),
-        deepSeekConfigured: Boolean(getDeepSeekKey())
+        deepSeekConfigured: Boolean(getDeepSeekKey()),
+        flowState: buildGeneratorFlowState(
+          site,
+          templatePackPayload.templatePacks,
+          templatePackPayload.templatePacks[0] ? buildWorkflowSteps(templatePackPayload.templatePacks[0]) : []
+        )
       });
       return;
     }

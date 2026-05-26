@@ -103,6 +103,96 @@ p {
   justify-content: flex-end;
 }
 
+.flow-overview {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) 86px minmax(220px, 0.45fr);
+  align-items: center;
+  gap: 14px;
+  padding: 16px 16px 0;
+}
+
+.flow-card {
+  border: 2px solid #1f2722;
+  background: rgba(255, 253, 248, 0.82);
+  box-shadow: 0 6px 0 rgba(31, 39, 34, 0.04);
+}
+
+.flow-card-large {
+  min-height: 132px;
+  padding: 18px;
+  border-radius: 34px;
+}
+
+.flow-card-small {
+  min-height: 96px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.flow-kicker {
+  color: #8b6546;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.flow-card h2 {
+  margin-top: 7px;
+  max-width: 640px;
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.flow-card-small h2 {
+  font-size: 16px;
+}
+
+.flow-card-small p {
+  margin-top: 7px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.flow-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.flow-stats span {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.flow-arrow {
+  height: 2px;
+  background: #1f2722;
+  position: relative;
+}
+
+.flow-arrow::before,
+.flow-arrow::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  width: 28px;
+  height: 2px;
+  background: #1f2722;
+  transform-origin: right center;
+}
+
+.flow-arrow::before {
+  transform: rotate(22deg);
+}
+
+.flow-arrow::after {
+  transform: rotate(-22deg);
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(340px, 0.82fr) minmax(360px, 1fr) minmax(360px, 1fr) minmax(320px, 0.9fr);
@@ -766,6 +856,33 @@ select {
 }
 
 @media (max-width: 1180px) {
+  .flow-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .flow-arrow {
+    width: 2px;
+    height: 44px;
+    justify-self: center;
+  }
+
+  .flow-arrow::before,
+  .flow-arrow::after {
+    bottom: 0;
+    right: auto;
+    left: 0;
+    width: 22px;
+    transform-origin: left center;
+  }
+
+  .flow-arrow::before {
+    transform: rotate(55deg);
+  }
+
+  .flow-arrow::after {
+    transform: rotate(125deg);
+  }
+
   .workspace {
     grid-template-columns: 1fr;
   }
