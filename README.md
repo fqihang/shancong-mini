@@ -49,6 +49,25 @@ node scripts/sync-site-config.js
 - `assets/photos/landscape/`：横屏图，适合首屏、山景、溪流、建筑和公共区。
 - `assets/photos/portrait/`：竖屏图，适合房间、窗景、咖啡、床品和局部细节。
 
+### 本地内容生成器
+
+本地生成器用于编辑、预览和保存 `content/site.json`，也可以调用 DeepSeek 生成 JSON proposal。
+
+启动：
+
+```bash
+npm run generator
+```
+
+打开终端输出的本地地址，默认是 `http://127.0.0.1:57592`。
+
+DeepSeek API key 只放本地，不提交仓库。任选一种方式：
+
+- 启动前设置环境变量 `DEEPSEEK_API_KEY`。
+- 在仓库根目录创建 `.deepseek-key`，只写 key 本身。该文件已加入 `.gitignore`。
+
+Chat 只生成 proposal。点击“应用到编辑器”后仍需校验，再点击“保存并同步”才会写入 `content/site.json` 和 `utils/content-data.js`。
+
 ## 产品边界
 
 - 不接云数据库，不保存用户留言。

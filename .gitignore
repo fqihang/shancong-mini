@@ -1,1 +1,4 @@
 .superpowers/
+.deepseek-key
+.env.local
+tools/generator/.env.local

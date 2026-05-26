@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>山从内容生成器</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Local Generator</div>
+        <h1>山从内容生成器</h1>
+      </div>
+      <div class="actions">
+        <button id="reloadBtn" type="button">重新读取</button>
+        <button id="validateBtn" type="button">校验</button>
+        <button id="saveBtn" type="button" class="primary">保存并同步</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="panel editor-panel">
+        <div class="panel-head">
+          <div>
+            <h2>内容编辑</h2>
+            <p>快捷字段会同步到下方 JSON，保存前会复用小程序同一套校验规则。</p>
+          </div>
+          <span id="validationBadge" class="badge neutral">未校验</span>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            <span>民宿名称</span>
+            <input id="brandNameInput" type="text" />
+          </label>
+          <label>
+            <span>位置</span>
+            <input id="locationInput" type="text" />
+          </label>
+          <label>
+            <span>分享标题</span>
+            <input id="shareTitleInput" type="text" />
+          </label>
+          <label>
+            <span>电话</span>
+            <input id="phoneInput" type="text" />
+          </label>
+          <label>
+            <span>微信号</span>
+            <input id="wechatInput" type="text" />
+          </label>
+          <label>
+            <span>地址</span>
+            <input id="addressInput" type="text" />
+          </label>
+        </div>
+
+        <label class="json-label" for="jsonEditor">content/site.json</label>
+        <textarea id="jsonEditor" spellcheck="false"></textarea>
+
+        <div id="statusBox" class="status-box"></div>
+      </section>
+
+      <section class="panel preview-panel">
+        <div class="panel-head">
+          <div>
+            <h2>页面预览</h2>
+            <p>按当前 JSON 近似预览首页画廊、素材和联系信息。</p>
+          </div>
+        </div>
+        <div id="previewRoot" class="preview-root"></div>
+      </section>
+
+      <section class="panel chat-panel">
+        <div class="panel-head">
+          <div>
+            <h2>AI Chat</h2>
+            <p>调用本地 DeepSeek 配置生成 JSON proposal，应用后仍需校验和保存。</p>
+          </div>
+          <span id="keyBadge" class="badge neutral">检查中</span>
+        </div>
+
+        <textarea
+          id="chatInput"
+          class="chat-input"
+          placeholder="例如：把首页改得更像安静画廊，用现有图片重排 4 个 sections，文案更少一点。"
+        ></textarea>
+        <button id="sendChatBtn" type="button" class="primary wide">生成 proposal</button>
+
+        <div id="proposalBox" class="proposal-box empty">
+          等待生成。DeepSeek 只会返回 proposal，不会直接覆盖文件。
+        </div>
+        <div class="proposal-actions">
+          <button id="applyProposalBtn" type="button" disabled>应用到编辑器</button>
+          <button id="discardProposalBtn" type="button" disabled>丢弃</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
